@@ -11,6 +11,8 @@ const bodyParser = require('body-parser');
 
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const testsRoutes = require('./Routes/testRoutes');
+const scoreRoutes = require('./Routes/scoreRoutes');
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use(bodyParser.json());
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/tests', testsRoutes);
+app.use('/score', scoreRoutes);
 
 
 const PORT = process.env.PORT || 5000;

@@ -1,6 +1,6 @@
 const authModel = require("../Model/authModel");
 const bcrypt = require("bcrypt");
-const userModel = require("../Model/userModel");
+
 
 const AuthController = {
   // LOGIN

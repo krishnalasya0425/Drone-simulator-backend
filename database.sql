@@ -12,5 +12,98 @@ CREATE TABLE users (
 );
 
 
+CREATE TABLE tests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE test_questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    test_id INT NOT NULL,
+    question_text TEXT NOT NULL,
+    question_type VARCHAR(50) ,
+    answer VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE question_options (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question_id INT NOT NULL,
+    option_key VARCHAR(10),    -- A, B, C, D
+    option_value TEXT NOT NULL,
+    FOREIGN KEY (question_id) REFERENCES test_questions(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE test_scores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    test_id INT NOT NULL,
+    student_id INT NOT NULL,
+    score INT NOT NULL,     
+    total_questions INT NOT NULL,    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+
+CREATE TABLE classes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    class_name VARCHAR(255) NOT NULL,
+    created_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+
+CREATE TABLE syllabus (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    class_id INT NOT NULL,
+    syllabus_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+);
+
+
+
+CREATE TABLE sub_syllabus (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    syllabus_id INT NOT NULL,
+    sub_syllabus_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (syllabus_id) REFERENCES syllabus(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE docs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    syllabus_id INT NULL,
+    sub_syllabus_id INT NULL,
+    doc_title VARCHAR(255),
+    file_url TEXT NOT NULL,
+    file_type ENUM('image','pdf','doc','ppt','excel','sheet') NOT NULL,
+    uploaded_by INT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (syllabus_id) REFERENCES syllabus(id) ON DELETE CASCADE,
+    FOREIGN KEY (sub_syllabus_id) REFERENCES sub_syllabus(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+
+
+
+
 
 

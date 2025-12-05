@@ -54,21 +54,20 @@ const UserModel = {
   },
 
   // Get users by Batch Number
-  async getByBatch(batch_no) {
+  async getByBatch(classes) {
     const [rows] = await pool.query(
-      `SELECT id, name, army_id, batch_no FROM users WHERE batch_no = ?`,
-      [batch_no]
+      `SELECT id, name, army_id, batch_no FROM users WHERE classes = ?`,
+      [classes]
     );
     return rows;
   },
 
   // Update status
-  async updateStatus(id, status) {
+  async updateStatus(id, status, classes) {
     await pool.query(
-      `UPDATE users SET status = ? WHERE id = ?`,
-      [status, id]
+      `UPDATE users SET status = ? classes =?  WHERE id = ?`,
+      [status,classes, id]
     );
-  }
-};
+  }};
 
 module.exports = UserModel;
