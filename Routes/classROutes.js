@@ -10,10 +10,12 @@ const upload = multer({ storage });
 
 // Class Routes
 router.get('/', classController.getClassesByInstructorId);
+router.get('/assigned', classController.getByStudentId);
 router.get('/:id', classController.getClassInfo);
 router.post('/', classController.addClass);
 router.put('/:classId', classController.updateClass);
 router.delete('/:classId', classController.delelteClass);
+
 
 // Syllabus Routes
 // router.get('/syllabus', syllabusController.getAllSyllabus);

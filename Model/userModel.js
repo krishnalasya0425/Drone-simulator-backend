@@ -48,7 +48,7 @@ const UserModel = {
   // Get users by role
   async getByRole(role) {
     const [rows] = await pool.query(
-      `SELECT id, name, army_id, role ,batch_no, regiment  FROM users WHERE role = ?`,
+      `SELECT id, name FROM users WHERE role = ?`,
       [role]
     );
     return rows;

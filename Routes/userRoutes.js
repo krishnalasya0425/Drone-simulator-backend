@@ -9,7 +9,7 @@ router.get('/', userController.getAllUsers);
 router.post('/register', userController.createUser);
 
 // SEARCH by role
-router.get('/role/:role', userController.getByRole);
+router.get('/:role', userController.getByRole);
 
 // SEARCH by batch number
 router.get('/batch/:batch_no', userController.getByBatch);

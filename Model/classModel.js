@@ -33,7 +33,7 @@ async getClassInfo(id) {
 
   async getClassesFiltered(instructorId) {
     let query = `
-    SELECT c.id, c.class_name, c.created_at, u.name AS created_by
+    SELECT c.id, c.class_name
     FROM classes c
     JOIN users u ON c.created_by = u.id
   `;
@@ -54,6 +54,21 @@ async getClassInfo(id) {
     const values = [classId];
     await pool.query(query, values);
   },
+
+   async getClassesByStudent(studentId){
+    const query = `
+      SELECT 
+        c.id,
+        c.class_name
+      FROM assigned_classes ac
+      JOIN classes c ON ac.class_id = c.id
+      JOIN users u ON ac.student_id = u.id
+      WHERE ac.student_id = ?;
+    `;
+
+    const [rows] = await pool.query(query, [studentId]);
+    return rows;
+  }
 };
 
 const docsModel = {
@@ -87,6 +102,10 @@ const docsModel = {
     const values = [doc_title, id];
     await pool.query(query, values);
   },
+
+ 
+
+  
 };
 
 module.exports = { classModel, docsModel };

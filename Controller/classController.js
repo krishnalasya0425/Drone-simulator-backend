@@ -27,6 +27,21 @@ const classController = {
   }
 },
 
+async getByStudentId(req, res){
+   const { id } = req.query;
+
+  try {
+    const classes = await classModel.getClassesByStudent(id);
+    return res.status(200).json(classes);
+  } catch (error) {
+    console.error("Error fetching classes by student:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching assigned classes"
+    });
+  }
+},
+
 
     async addClass(req, res) {
        

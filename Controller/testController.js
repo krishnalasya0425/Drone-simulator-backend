@@ -2,17 +2,18 @@ const testModel = require('../Model/testModel');
 
 
 const testController = {
-    async createTest(req, res) {
-        const { title, description } = req.body;
-        try {
-            const newTest = await testModel.createTest(title, description);
-            res.status(201).json(newTest);
-        }
-        catch (err) {   
-            console.error("Error creating test:", err);
-            res.status(500).json({ error: 'Internal server error' });
-        }   
-    },
+   async createTest(req, res) {
+    const { title } = req.body;
+    try {
+        const testId = await testModel.createTest(title);
+        res.status(201).json({ testId });
+    }
+    catch (err) {
+        console.error("Error creating test:", err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+},
+
     
 
     async addQuestions(req, res) {  

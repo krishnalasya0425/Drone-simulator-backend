@@ -1,12 +1,20 @@
 const pool = require('../config/db');
 
 const testModel ={
-    async createTest(title, description) {
-        const query = 'INSERT INTO tests (title, description) VALUES ($1, $2) RETURNING *';
-        const values = [title, description];
-        const res =  await pool.query(query, values);
-        return res.rows[0];
-    },
+  
+   async createTest(title) {
+    try {
+        const insertQuery = 'INSERT INTO tests (title) VALUES (?)';
+        const [insertResult] = await pool.query(insertQuery, [title]);
+
+        // Return only ID
+        return insertResult.insertId;
+
+    } catch (err) {
+        console.error("Error creating test:", err);
+        throw err;
+    }
+},
 
     async getTestById(testId) {
         const query = 'SELECT * FROM tests WHERE id = $1';
