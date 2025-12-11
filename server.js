@@ -13,6 +13,8 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const testsRoutes = require('./Routes/testRoutes');
 const scoreRoutes = require('./Routes/scoreRoutes');
+const classRoutes = require('./Routes/classROutes');
+const otpRoutes = require("./Routes/otpRoutes");
 
 const app = express();
 
@@ -29,6 +31,9 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/tests', testsRoutes);
 app.use('/score', scoreRoutes);
+app.use('/c', classRoutes);
+app.use("/otp", otpRoutes);
+
 
 
 const PORT = process.env.PORT || 5000;

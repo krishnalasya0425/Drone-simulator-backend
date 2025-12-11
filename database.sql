@@ -65,39 +65,14 @@ CREATE TABLE classes (
 
 
 
-CREATE TABLE syllabus (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    class_id INT NOT NULL,
-    syllabus_name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
-);
-
-
-
-CREATE TABLE sub_syllabus (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    syllabus_id INT NOT NULL,
-    sub_syllabus_name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (syllabus_id) REFERENCES syllabus(id) ON DELETE CASCADE
-);
-
-
 CREATE TABLE docs (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    syllabus_id INT NULL,
-    sub_syllabus_id INT NULL,
+    class_id INT NOT NULL,
     doc_title VARCHAR(255),
-    file_url TEXT NOT NULL,
-    file_type ENUM('image','pdf','doc','ppt','excel','sheet') NOT NULL,
-    uploaded_by INT NOT NULL,
+    file_data LONGBLOB NOT NULL,     -- File binary data
+    file_type VARCHAR(255) NOT NULL,  -- MIME type (pdf, png, jpg, etc.)
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (syllabus_id) REFERENCES syllabus(id) ON DELETE CASCADE,
-    FOREIGN KEY (sub_syllabus_id) REFERENCES sub_syllabus(id) ON DELETE CASCADE,
-    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );
 
 

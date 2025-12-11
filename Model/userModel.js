@@ -21,6 +21,7 @@ const UserModel = {
     return rows;
   },
 
+  
   // Update user fields
   async updateUser(id, fields) {
     const keys = Object.keys(fields);
@@ -47,7 +48,7 @@ const UserModel = {
   // Get users by role
   async getByRole(role) {
     const [rows] = await pool.query(
-      `SELECT id, name, army_id, role FROM users WHERE role = ?`,
+      `SELECT id, name, army_id, role ,batch_no, regiment  FROM users WHERE role = ?`,
       [role]
     );
     return rows;
