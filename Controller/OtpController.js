@@ -13,11 +13,12 @@ const OtpController = {
     const { armyId } = req.body;
 
     try {
-      const user = await UserModel.getByArmyId(armyId);
-      if (!user) return res.status(404).json({ message: "User not found" });
+    const [user] = await UserModel.getByArmyId(armyId);
 
-      const otp = generateOtp();
-      await OtpModel.createOtp(user.id, otp);
+if (!user) return res.status(404).json({ message: "User not found" });
+
+const otp = generateOtp();
+await OtpModel.createOtp(user.id, otp);
 
       res.json({ message: "OTP generated", otp });
     } catch (err) {
@@ -87,7 +88,14 @@ const OtpController = {
           const isValid = otp && new Date(otp.expires_at) > new Date() && !otp.used;
 
           return {
-            user_id: u.id,
+            id: u.id,
+            name : u.name,
+            batch_no : u.batch_no,
+            army_id : u.army_id,
+            regiment : u.regiment,
+            role : u.role,
+            status: u.status,
+
             otp: otp ? otp.otp : null,
             valid: isValid,
           };

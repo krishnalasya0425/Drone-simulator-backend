@@ -21,6 +21,17 @@ const UserModel = {
     return rows;
   },
 
+  async getByArmyId(armyId) {
+  const [rows] = await pool.query(
+    `SELECT id, name 
+     FROM users 
+     WHERE army_id = ?`,
+    [armyId]
+  );
+    return rows[0];
+},
+
+
   
   // Update user fields
   async updateUser(id, fields) {
@@ -46,13 +57,36 @@ const UserModel = {
   },
 
   // Get users by role
-  async getByRole(role) {
-    const [rows] = await pool.query(
-      `SELECT id, name FROM users WHERE role = ?`,
-      [role]
-    );
-    return rows;
-  },
+ async getByRole(role) {
+  const [rows] = await pool.query(
+    `
+    SELECT 
+      u.id,
+      u.name,
+      u.regiment,
+      u.batch_no,
+      u.army_id,
+      u.role,
+      u.status,
+      o.otp,
+      o.expires_at
+    FROM users u
+    LEFT JOIN otp_verifications o 
+      ON u.id = o.user_id
+      AND o.id = (
+          SELECT id FROM otp_verifications
+          WHERE user_id = u.id
+          ORDER BY created_at DESC
+          LIMIT 1
+      )
+    WHERE u.role = ?;
+    `,
+    [role]
+  );
+
+  return rows;
+},
+
 
   // Get users by Batch Number
   async getByBatch(classes) {

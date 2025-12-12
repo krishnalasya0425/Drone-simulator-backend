@@ -6,7 +6,7 @@ CREATE TABLE users (
     army_id VARCHAR(50) UNIQUE NOT NULL,
     role ENUM('Student', 'Instructor') NOT NULL ,
     password VARCHAR(255) NOT NULL,
-    status ENUM('Approved', 'Denied') NOT NULL DEFAULT 'Denied',
+    status ENUM('Pending','Approved', 'Denied') NOT NULL DEFAULT 'Denied',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -85,6 +85,7 @@ CREATE TABLE otp_verifications (
     user_id INT NOT NULL,
     otp VARCHAR(10) NOT NULL,
     expires_at DATETIME NOT NULL,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_otp_user
@@ -93,6 +94,7 @@ CREATE TABLE otp_verifications (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
 
 
 CREATE TABLE assigned_classes (
