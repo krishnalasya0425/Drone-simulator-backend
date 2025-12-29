@@ -15,7 +15,7 @@ const testsRoutes = require('./Routes/testRoutes');
 const scoreRoutes = require('./Routes/scoreRoutes');
 const classRoutes = require('./Routes/classROutes');
 const otpRoutes = require("./Routes/otpRoutes");
-
+const unityRoutes = require("./Routes/unityRoutes");
 const app = express();
 
 
@@ -33,7 +33,7 @@ app.use('/tests', testsRoutes);
 app.use('/score', scoreRoutes);
 app.use('/c', classRoutes);
 app.use("/otp", otpRoutes);
-
+app.use("/api/unity", unityRoutes);
 
 
 const PORT = process.env.PORT || 5000;
