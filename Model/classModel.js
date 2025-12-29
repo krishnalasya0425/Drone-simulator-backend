@@ -1,3 +1,4 @@
+
 const pool = require("../config/db");
 
 const classModel = {
@@ -68,6 +69,15 @@ async getClassInfo(id) {
 
     const [rows] = await pool.query(query, [studentId]);
     return rows;
+  },
+
+  async assignStudentToClass(studentId, classId) {
+    const query = `
+      INSERT INTO assigned_classes (student_id, class_id)
+      VALUES (?, ?)
+      ON DUPLICATE KEY UPDATE assigned_at = CURRENT_TIMESTAMP
+    `;
+    await pool.query(query, [studentId, classId]);
   }
 };
 

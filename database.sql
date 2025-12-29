@@ -97,7 +97,7 @@ CREATE TABLE otp_verifications (
 
 
 
-CREATE TABLE assigned_classes (
+CREATE TABLE IF NOT EXISTS assigned_classes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     class_id INT NOT NULL,
     student_id INT NOT NULL,

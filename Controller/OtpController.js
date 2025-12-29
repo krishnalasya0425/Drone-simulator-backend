@@ -1,3 +1,5 @@
+
+
 const UserModel = require("../Model/userModel");
 const OtpModel = require("../Model/otpModel");
 const bcrypt = require("bcrypt");
@@ -13,7 +15,7 @@ const OtpController = {
     const { armyId } = req.body;
 
     try {
-    const [user] = await UserModel.getByArmyId(armyId);
+    const user = await UserModel.getByArmyId(armyId);
 
 if (!user) return res.status(404).json({ message: "User not found" });
 

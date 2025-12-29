@@ -1,5 +1,7 @@
+
 const bcrypt = require('bcrypt');
 const UserModel = require('../Model/userModel');
+const { classModel } = require('../Model/classModel');
 
 const UserController = {
   
@@ -91,9 +93,15 @@ const UserController = {
   async setStatus(req, res) {
     try {
       const { id } = req.params;
-      const { status } = req.body;
+      const { status, classId } = req.body;
 
       await UserModel.updateStatus(id, status);
+      
+      // If status is Approved and classId is provided, assign student to class
+      if (status === 'Approved' && classId) {
+        await classModel.assignStudentToClass(id, classId);
+      }
+
       res.json({ message: "Status updated" });
 
     } catch (err) {

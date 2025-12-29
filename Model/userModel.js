@@ -1,3 +1,4 @@
+
 const pool = require('../config/db');
 
 const UserModel = {
@@ -98,11 +99,12 @@ const UserModel = {
   },
 
   // Update status
-  async updateStatus(id, status, classes) {
+  async updateStatus(id, status) {
     await pool.query(
-      `UPDATE users SET status = ? classes =?  WHERE id = ?`,
-      [status,classes, id]
+      `UPDATE users SET status = ? WHERE id = ?`,
+      [status, id]
     );
-  }};
+  }
+};
 
 module.exports = UserModel;
