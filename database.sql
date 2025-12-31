@@ -15,8 +15,16 @@ CREATE TABLE users (
 CREATE TABLE tests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+    class_id INT NOT NULL,
+    created_by INT NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_tests_class FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_tests_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 );
+
 
 
 CREATE TABLE test_questions (
@@ -58,7 +66,6 @@ CREATE TABLE classes (
     class_name VARCHAR(255) NOT NULL,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -97,7 +104,7 @@ CREATE TABLE otp_verifications (
 
 
 
-CREATE TABLE IF NOT EXISTS assigned_classes (
+CREATE TABLE assigned_classes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     class_id INT NOT NULL,
     student_id INT NOT NULL,

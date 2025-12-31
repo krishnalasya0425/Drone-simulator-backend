@@ -131,7 +131,7 @@ async login(req, res) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    if (process.env.NODE_ENV === 'production' && user.status.toLowerCase() !== 'approved') {
+    if (process.env.NODE_ENV === 'production' && user.status.toLowerCase() !== 'Approved') {
       console.log('Account not approved. Status:', user.status);
       const message =
         user.role.toLowerCase() === 'student'

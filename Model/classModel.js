@@ -2,8 +2,8 @@
 const pool = require("../config/db");
 
 const classModel = {
-async getClassInfo(id) {
-  const query = `
+  async getClassInfo(id) {
+    const query = `
     SELECT 
       c.id,
       c.class_name,
@@ -15,9 +15,9 @@ async getClassInfo(id) {
     WHERE c.id = ?;
   `;
 
-  const [rows] = await pool.query(query, [id]);
-  return rows[0]; 
-},
+    const [rows] = await pool.query(query, [id]);
+    return rows[0];
+  },
 
   async createClass(className, createdBy) {
     const query = `INSERT INTO classes (class_name, created_by) VALUES (?, ?)`;
@@ -56,7 +56,7 @@ async getClassInfo(id) {
     await pool.query(query, values);
   },
 
-   async getClassesByStudent(studentId){
+  async getClassesByStudent(studentId) {
     const query = `
       SELECT 
         c.id,
@@ -71,6 +71,22 @@ async getClassInfo(id) {
     return rows;
   },
 
+  async getStudentsByClass(classId) {
+    const query = `
+      SELECT 
+        u.id,
+        u.name,
+        u.army_id,
+        u.batch_no,
+        u.regiment
+      FROM assigned_classes ac
+      JOIN users u ON ac.student_id = u.id
+      WHERE ac.class_id = ?;
+    `;
+    const [rows] = await pool.query(query, [classId]);
+    return rows;
+  },
+
   async assignStudentToClass(studentId, classId) {
     const query = `
       INSERT INTO assigned_classes (student_id, class_id)
@@ -78,6 +94,14 @@ async getClassInfo(id) {
       ON DUPLICATE KEY UPDATE assigned_at = CURRENT_TIMESTAMP
     `;
     await pool.query(query, [studentId, classId]);
+  },
+
+  async removeStudentsFromClass(studentIds, classId) {
+    const query = `
+      DELETE FROM assigned_classes 
+      WHERE class_id = ? AND student_id IN (?)
+    `;
+    await pool.query(query, [classId, studentIds]);
   }
 };
 
@@ -106,16 +130,16 @@ const docsModel = {
   async deleteDoc(id) {
     return pool.query(`DELETE FROM docs WHERE id = ?`, [id]);
   },
-  
+
   async updateDoc(id, doc_title) {
     const query = `UPDATE classes SET doc_title = ? WHERE id = ?`;
     const values = [doc_title, id];
     await pool.query(query, values);
   },
 
- 
 
-  
+
+
 };
 
 module.exports = { classModel, docsModel };

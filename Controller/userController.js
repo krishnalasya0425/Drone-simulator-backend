@@ -1,14 +1,27 @@
 
+
 const bcrypt = require('bcrypt');
 const UserModel = require('../Model/userModel');
 const { classModel } = require('../Model/classModel');
 
 const UserController = {
-  
+
   // GET all users
   async getAllUsers(req, res) {
     try {
-      const users = await UserModel.getAll();
+      const { role, status } = req.query;
+      let users;
+      if (role) {
+        users = await UserModel.getByRole(role);
+        if (status) {
+          users = users.filter(u => u.status === status);
+        }
+      } else {
+        users = await UserModel.getAll();
+        if (status) {
+          users = users.filter(u => u.status === status);
+        }
+      }
       res.json(users);
     } catch (err) {
       console.error(err);
@@ -20,7 +33,7 @@ const UserController = {
   async createUser(req, res) {
     try {
       const body = req.body;
-      
+
       // hash password
       const hashedPassword = await bcrypt.hash(body.password, 10);
 
@@ -38,17 +51,22 @@ const UserController = {
   async updateUser(req, res) {
     try {
       const { id } = req.params;
-      const data = req.body;
+      const { class_id, ...userData } = req.body;
 
-      if (data.password) {
-        data.password = await bcrypt.hash(data.password, 10);
+      if (userData.password) {
+        userData.password = await bcrypt.hash(userData.password, 10);
       }
 
-      await UserModel.updateUser(id, data);
+      // Handle class assignment if class_id is provided
+      if (class_id && class_id !== "") {
+        await classModel.assignStudentToClass(id, class_id);
+      }
+
+      await UserModel.updateUser(id, userData);
       res.json({ message: "User updated" });
 
     } catch (err) {
-      console.error(err);
+      console.error("Error in updateUser:", err);
       res.status(500).json({ message: "Server error" });
     }
   },
@@ -96,9 +114,9 @@ const UserController = {
       const { status, classId } = req.body;
 
       await UserModel.updateStatus(id, status);
-      
+
       // If status is Approved and classId is provided, assign student to class
-      if (status === 'Approved' && classId) {
+      if (status === 'Approved' && classId && classId !== "") {
         await classModel.assignStudentToClass(id, classId);
       }
 

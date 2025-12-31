@@ -1,7 +1,9 @@
+
+
 const express = require('express');
 const router = express.Router();
 const multer = require("multer");
-const {classController,docsController} = require('../Controller/classController');
+const { classController, docsController } = require('../Controller/classController');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -15,6 +17,11 @@ router.get('/:id', classController.getClassInfo);
 router.post('/', classController.addClass);
 router.put('/:classId', classController.updateClass);
 router.delete('/:classId', classController.delelteClass);
+
+// Student Management in Class
+router.get('/:classId/students', classController.getStudents);
+router.post('/:classId/students', classController.addStudents);
+router.delete('/:classId/students', classController.removeStudents);
 
 
 // Syllabus Routes
@@ -41,7 +48,7 @@ router.get("/docs/:class_id", docsController.getDocsByClass);
 router.get("/docs/file/:id", docsController.streamDoc);
 
 // Delete doc
-router.delete("/docs/:id", docsController.deleteDoc);
+router.delete("/:classId/docs/:id", docsController.deleteDoc);
 
 router.put('/docs/:id', docsController.updateDocs);
 
