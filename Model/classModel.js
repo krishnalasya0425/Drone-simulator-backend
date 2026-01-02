@@ -19,10 +19,24 @@ const classModel = {
     return rows[0];
   },
 
-  async createClass(className, createdBy) {
+  async createClass(classNameOrObj, createdBy) {
+    // Support both calling styles:
+    // 1. createClass({ class_name, created_by }) - object destructuring
+    // 2. createClass(className, createdBy) - traditional parameters
+    let className, instructorId;
+
+    if (typeof classNameOrObj === 'object' && classNameOrObj !== null) {
+      // Object destructuring style
+      className = classNameOrObj.class_name;
+      instructorId = classNameOrObj.created_by;
+    } else {
+      // Traditional parameters style
+      className = classNameOrObj;
+      instructorId = createdBy;
+    }
+
     const query = `INSERT INTO classes (class_name, created_by) VALUES (?, ?)`;
-    const values = [className, createdBy];
-    const [result] = await pool.query(query, values);
+    const [result] = await pool.query(query, [className, instructorId]);
     return result.insertId;
   },
 

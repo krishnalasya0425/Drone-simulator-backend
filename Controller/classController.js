@@ -44,6 +44,25 @@ const classController = {
     }
   },
 
+  async adminAddClass(req, res) {
+    try {
+      console.log("BODY:", req.body);
+      console.log("FILE:", req.file);
+
+      const { class_name, instructor_id } = req.body;
+
+      if (!class_name || !instructor_id) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      await classModel.createClass(class_name, instructor_id);
+
+      res.status(201).json({ message: "Class created successfully" });
+    } catch (err) {
+      console.error("adminAddClass error:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
 
   async addClass(req, res) {
 

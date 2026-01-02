@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 
 
 
+const unityRoutes = require('./Routes/unityRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const testsRoutes = require('./Routes/testRoutes');
@@ -27,6 +28,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://192.168.0.104:5173",
   "http://192.168.0.204:5173",
   "http://192.168.0.*:5173"
@@ -62,6 +64,7 @@ app.use('/tests', testsRoutes);
 app.use('/score', scoreRoutes);
 app.use('/classes', classRoutes);
 app.use("/otp", otpRoutes);
+app.use('/unity', unityRoutes);
 
 
 

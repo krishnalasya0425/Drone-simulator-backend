@@ -14,7 +14,7 @@ const upload = multer({ storage });
 router.get('/', classController.getClassesByInstructorId);
 router.get('/assigned', classController.getByStudentId);
 router.get('/:id', classController.getClassInfo);
-router.post('/', classController.addClass);
+router.post('/', upload.none(), classController.adminAddClass);  // Only admin can create classes
 router.put('/:classId', classController.updateClass);
 router.delete('/:classId', classController.delelteClass);
 
@@ -48,7 +48,8 @@ router.get("/docs/:class_id", docsController.getDocsByClass);
 router.get("/docs/file/:id", docsController.streamDoc);
 
 // Delete doc
-router.delete("/:classId/docs/:id", docsController.deleteDoc);
+router.delete("/docs/:id", docsController.deleteDoc);
+router.delete("/:classId/docs/:id", docsController.deleteDoc);  // Alternative path for frontend compatibility
 
 router.put('/docs/:id', docsController.updateDocs);
 
