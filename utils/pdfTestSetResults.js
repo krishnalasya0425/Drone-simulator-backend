@@ -36,20 +36,20 @@ module.exports = function generateTestSetResultsPdf(data, fileName, res) {
     const gap = 15;
 
     // Draw Summary Boxes
+    const currentY = doc.y;
     const drawCard = (label, value, color, x) => {
-        doc.rect(x, doc.y, cardWidth, cardHeight).fill('#f9fafb').stroke('#e5e7eb');
-        doc.fillColor(color).fontSize(14).font('Helvetica-Bold').text(value.toString(), x + 10, doc.y + 10);
-        doc.fillColor('gray').fontSize(8).font('Helvetica').text(label, x + 10, doc.y + 2);
+        doc.rect(x, currentY, cardWidth, cardHeight).fill('#f9fafb').stroke('#e5e7eb');
+        doc.fillColor(color).fontSize(14).font('Helvetica-Bold').text(value.toString(), x + 10, currentY + 10);
+        doc.fillColor('gray').fontSize(8).font('Helvetica').text(label, x + 10, currentY + 30);
     };
 
-    const currentY = doc.y;
     drawCard("TOTAL", total, '#1e40af', startX);
     drawCard("PASSED", passed, '#047857', startX + cardWidth + gap);
     drawCard("FAILED", failed, '#b91c1c', startX + (cardWidth + gap) * 2);
     drawCard("PENDING", pending, '#b45309', startX + (cardWidth + gap) * 3);
 
-    doc.moveDown(4);
-    doc.fillColor('black').fontSize(10).font('Helvetica-Bold').text(`Pass Mark: ${data.pass_threshold} Correct`, { align: 'right' });
+    doc.y = currentY + cardHeight + 20; // Move y down after the cards row
+    doc.fillColor('black').fontSize(10).font('Helvetica-Bold').text(`Pass Mark: ${data.pass_threshold} Correct`, 40, doc.y, { align: 'right', width: 510 });
     doc.moveDown(1);
 
     // ================= STUDENT TABLE =================
