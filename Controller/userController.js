@@ -3,6 +3,8 @@
 const bcrypt = require('bcrypt');
 const UserModel = require('../Model/userModel');
 const { classModel } = require('../Model/classModel');
+const testModel = require('../Model/testModel');
+const generateStudentProfilePdf = require('../utils/pdfStudentProfile');
 
 const UserController = {
 
@@ -121,13 +123,38 @@ const UserController = {
       }
 
       res.json({ message: "Status updated" });
-
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });
     }
-  }
+  },
 
+  async downloadProfilePdf(req, res) {
+    try {
+      const { id } = req.params;
+
+      // 1. Fetch info
+      const student = await UserModel.getById(id);
+      if (!student) return res.status(404).json({ message: "Student not found" });
+
+      const classes = await classModel.getClassesByStudent(id);
+      const tests = await testModel.getTestsByStudent(id);
+
+      const data = {
+        ...student,
+        classes,
+        tests
+      };
+
+      const fileName = `${student.name.replace(/\s+/g, '_')}_Profile`;
+
+      generateStudentProfilePdf(data, fileName, res);
+
+    } catch (err) {
+      console.error("Error generating profile PDF:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
 };
 
 module.exports = UserController;

@@ -5,6 +5,9 @@ const userController = require('../Controller/userController');
 // GET all
 router.get('/', userController.getAllUsers);
 
+// DOWNLOAD profile
+router.get('/download-profile/:id', userController.downloadProfilePdf);
+
 // CREATE user
 router.post('/register', userController.createUser);
 

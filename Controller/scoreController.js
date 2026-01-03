@@ -47,15 +47,31 @@ const scoreController = {
                 });
             }
 
+            const summary = await scoreModel.getResultsByTestSetId(test_set_id);
+            if (!summary) return res.status(404).json({ message: "Test set not found" });
+
+            const studentData = summary.results.find(s => s.student_id == student_id);
+            if (!studentData) return res.status(404).json({ message: "Student record not found" });
+
             const data = await scoreModel.getStudentTestReview(
                 Number(student_id),
                 Number(test_set_id)
             );
 
+            const duration = studentData.started_at && studentData.submitted_at
+                ? Math.ceil((new Date(studentData.submitted_at) - new Date(studentData.started_at)) / 60000)
+                : "--";
+
             res.status(200).json({
                 student_id,
                 test_set_id,
-                total_questions: data.length,
+                student_name: studentData.name,
+                score: studentData.score,
+                total_questions: studentData.total_questions,
+                pass_threshold: summary.pass_threshold,
+                status: studentData.status,
+                submitted_at: studentData.submitted_at,
+                time_taken: duration,
                 questions: data
             });
         } catch (err) {

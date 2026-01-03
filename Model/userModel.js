@@ -127,6 +127,16 @@ const UserModel = {
       `UPDATE users SET status = ? WHERE id = ?`,
       [status, id]
     );
+  },
+
+  async getById(id) {
+    const [rows] = await pool.query(
+      `SELECT u.id, u.name, u.regiment, u.batch_no, u.army_id, u.role, u.status
+       FROM users u
+       WHERE u.id = ?`,
+      [id]
+    );
+    return rows[0];
   }
 };
 
