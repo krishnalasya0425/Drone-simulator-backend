@@ -10,12 +10,13 @@ const bodyParser = require('body-parser');
 
 
 const unityRoutes = require('./Routes/unityRoutes');
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
+const authRoutes = require('./Routes/authRoutes');
+const userRoutes = require('./Routes/userRoutes');
 const testsRoutes = require('./Routes/testRoutes');
 const scoreRoutes = require('./Routes/scoreRoutes');
 const classRoutes = require('./Routes/classROutes');
 const otpRoutes = require("./Routes/otpRoutes");
+const testSetRoutes = require("./Routes/testSetRoutes");
 
 const app = express();
 
@@ -29,9 +30,10 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
   "http://192.168.0.104:5173",
-  "http://192.168.0.204:5173",
-  "http://192.168.0.*:5173"
+  "http://192.168.0.104:5174"
 ];
 
 app.use(cors({
@@ -65,6 +67,8 @@ app.use('/score', scoreRoutes);
 app.use('/classes', classRoutes);
 app.use("/otp", otpRoutes);
 app.use('/unity', unityRoutes);
+app.use("/test-sets", testSetRoutes);
+app.use("/subtest", testSetRoutes); // Added alias for frontend compatibility
 
 
 

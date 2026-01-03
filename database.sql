@@ -1,3 +1,4 @@
+
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -47,17 +48,89 @@ CREATE TABLE question_options (
 );
 
 
-CREATE TABLE test_scores (
+CREATE TABLE test_sets (
     id INT AUTO_INCREMENT PRIMARY KEY,
+
     test_id INT NOT NULL,
-    student_id INT NOT NULL,
-    score INT NOT NULL,     
-    total_questions INT NOT NULL,    
+    set_name VARCHAR(100) NOT NULL,
+
+    total_questions INT NOT NULL,
+
+    exam_type ENUM(
+        'TIMED',
+        'UNTIMED',
+        'FIXED_TIME'
+    ) NOT NULL,
+
+    PASS_THRESHOLD INT NOT NULL,
+
+    -- For TIMED exams
+    duration_minutes INT NULL,
+
+    -- For FIXED_TIME exams
+    start_time DATETIME NULL,
+    end_time DATETIME NULL,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
+
+    -- Safety checks (MySQL 8+)
+    CHECK (
+        (exam_type = 'TIMED' AND duration_minutes IS NOT NULL)
+        OR
+        (exam_type = 'UNTIMED')
+        OR
+        (exam_type = 'FIXED_TIME' AND start_time IS NOT NULL AND end_time IS NOT NULL)
+    )
+);
+
+
+CREATE TABLE test_set_questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    test_set_id INT NOT NULL,
+    test_id INT NOT NULL,
+    question_id INT NOT NULL,
+
+    FOREIGN KEY (test_set_id) REFERENCES test_sets(id) ON DELETE CASCADE,
+    FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES test_questions(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE student_test_sets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    test_set_id INT NOT NULL,
+    student_id INT NOT NULL,
+
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    started_at TIMESTAMP,
+    submitted_at TIMESTAMP,
+    score INT,
+    answers JSON NULL,
+
+    UNIQUE KEY unique_student_test (test_set_id , student_id),
+
+    FOREIGN KEY (test_set_id) REFERENCES test_sets(id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+
+
+
+-- CREATE TABLE test_scores (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     test_id INT NOT NULL,
+--     student_id INT NOT NULL,
+--     score INT NOT NULL,     
+--     total_questions INT NOT NULL,    
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+--     FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
+--     FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+-- );
 
 
 

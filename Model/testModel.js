@@ -1,3 +1,5 @@
+
+
 const pool = require("../config/db");
 
 const testModel = {
@@ -19,56 +21,55 @@ const testModel = {
     return rows[0];
   },
 
-async getTestScoreInfo(testId) {
-  const query = `
-    SELECT
-      t.id AS test_id,
-      t.title AS test_title,
-      c.class_name,
+  async getTestScoreInfo(testId) {
+    const query = `
+      SELECT
+        t.id AS test_id,
+        t.title AS test_title,
+        c.class_name,
 
-      u.id AS student_id,
-      u.name AS student_name,
-      u.regiment,
-      u.batch_no,
-      u.army_id,
+        u.id AS student_id,
+        u.name AS student_name,
+        u.regiment,
+        u.batch_no,
+        u.army_id,
 
-      ts.score,
-      ts.total_questions
+        ts.score,
+        ts.total_questions
 
-    FROM tests t
-    JOIN classes c 
-      ON t.class_id = c.id
+      FROM tests t
+      JOIN classes c 
+        ON t.class_id = c.id
 
-    JOIN users u 
-      ON u.role = 'Student'
+      JOIN users u 
+        ON u.role = 'Student'
 
-    LEFT JOIN test_scores ts
-      ON ts.test_id = t.id
-      AND ts.student_id = u.id
+      LEFT JOIN test_scores ts
+        ON ts.test_id = t.id
+        AND ts.student_id = u.id
 
-    WHERE t.id = ?;
-  `;
+      WHERE t.id = ?;
+    `;
 
-  const [rows] = await pool.query(query, [testId]);
+    const [rows] = await pool.query(query, [testId]);
 
-  if (rows.length === 0) return null;
+    if (rows.length === 0) return null;
 
-  return {
-    test_id: rows[0].test_id,
-    test_title: rows[0].test_title,
-    class_name: rows[0].class_name,
-    students: rows.map(r => ({
-      student_id: r.student_id,
-      name: r.student_name,
-      regiment: r.regiment,
-      batch_no: r.batch_no,
-      army_id: r.army_id,
-      score: r.score,
-      total_questions: r.total_questions
-    }))
-  };
-},
-
+    return {
+      test_id: rows[0].test_id,
+      test_title: rows[0].test_title,
+      class_name: rows[0].class_name,
+      students: rows.map(r => ({
+        student_id: r.student_id,
+        name: r.student_name,
+        regiment: r.regiment,
+        batch_no: r.batch_no,
+        army_id: r.army_id,
+        score: r.score,
+        total_questions: r.total_questions
+      }))
+    };
+  },
 
   async updatTest(testName, testId) {
     const query = `UPDATE tests SET title = ? WHERE id = ?`;
@@ -78,9 +79,10 @@ async getTestScoreInfo(testId) {
 
   async getTestsFiltered(instructorId) {
     let query = `
-    SELECT t.id, t.title
+    SELECT t.id, t.title, c.class_name
     FROM tests t
     JOIN users u ON t.created_by = u.id
+    LEFT JOIN classes c ON t.class_id = c.id
   `;
 
     const params = [];
@@ -100,51 +102,50 @@ async getTestScoreInfo(testId) {
     await pool.query(query, values);
   },
 
-// async getTestsByStudent(studentId) {
-//   try {
-//     const query = `
-//       SELECT DISTINCT
-//         t.id,
-//         t.title
-//       FROM assigned_classes ac
-//       JOIN tests t
-//         ON ac.class_id = t.class_id
-//       WHERE ac.student_id = ?;
-//     `;
+  async getTestsByStudent(studentId) {
+    try {
+      const query = `
+        SELECT
+          sts.id AS id,
+          sts.id AS student_test_set_id,
+          sts.assigned_at,
+          sts.started_at,
+          sts.submitted_at,
+          sts.score,
 
-//     const [rows] = await pool.query(query, [studentId]);
-//     return rows;
-//   } catch (err) {
-//     console.error('Error fetching tests for student:', err);
-//     throw err;
-//   }
-// },
+          ts.id AS test_set_id,
+          ts.set_name,
+          ts.total_questions,
+          ts.exam_type,
+          ts.pass_threshold,
+          ts.duration_minutes,
+          ts.start_time,
+          ts.end_time,
+          ts.pass_threshold,
 
-async getTestsByStudent(studentId) {
-  try {
-    const query = `
-      SELECT
-        t.id , 
-        t.title,
-        ts.score,
-        ts.total_questions
-      FROM assigned_classes ac
-     JOIN tests t
-        ON ac.class_id = t.class_id
-      LEFT JOIN test_scores ts
-        ON ts.test_id = t.id
-       AND ts.student_id = ac.student_id
-      WHERE ac.student_id = ?;
-    `;
+          t.id AS test_id,
+          t.title AS test_title,
+          c.class_name
 
-    const [rows] = await pool.query(query, [studentId]);
-    return rows;
-  } catch (err) {
-    console.error('Error fetching student tests with scores:', err);
-    throw err;
-  }
-},
+        FROM student_test_sets sts
+        JOIN test_sets ts 
+          ON sts.test_set_id = ts.id
+        JOIN tests t 
+          ON ts.test_id = t.id
+        LEFT JOIN classes c
+          ON t.class_id = c.id
 
+        WHERE sts.student_id = ?;
+      `;
+
+      const [rows] = await pool.query(query, [studentId]);
+      return rows;
+
+    } catch (err) {
+      console.error('Error fetching student tests:', err);
+      throw err;
+    }
+  },
 
   async createTest(title, ID, classId) {
     try {
@@ -160,10 +161,9 @@ async getTestsByStudent(studentId) {
   },
 
   async getTestById(testId) {
-    const query = "SELECT * FROM tests WHERE id = $1";
-    const values = [testId];
-    const res = await pool.query(query, values);
-    return res.rows[0];
+    const query = "SELECT * FROM tests WHERE id = ?";
+    const [rows] = await pool.query(query, [testId]);
+    return rows[0];
   },
 
   async addQuestionsToTest(testId, questions) {
@@ -248,6 +248,103 @@ async getTestsByStudent(studentId) {
     return Object.values(questionsMap);
   },
 
+  async getQuestionsByTestSetId(idOrStsId) {
+    // 1️⃣ Resolve if it's a student_test_set_id
+    const [[info]] = await pool.query(
+      `SELECT ts.id AS test_set_id, ts.test_id 
+       FROM student_test_sets sts 
+       JOIN test_sets ts ON sts.test_set_id = ts.id 
+       WHERE sts.id = ?`,
+      [idOrStsId]
+    );
+
+    const testSetId = info ? info.test_set_id : idOrStsId;
+    const testId = info ? info.test_id : idOrStsId;
+
+    let sql = `
+      SELECT
+        ts.id            AS test_set_id,
+        ts.test_id,
+        ts.set_name,
+        ts.exam_type,
+        ts.duration_minutes,
+        ts.start_time,
+        ts.end_time,
+        ts.PASS_THRESHOLD,
+        ts.total_questions,
+        q.id             AS question_id,
+        q.question_text,
+        q.question_type,
+        q.answer,
+        o.id             AS option_id,
+        o.option_key,
+        o.option_value
+      FROM test_sets ts
+      INNER JOIN test_set_questions tsq ON tsq.test_set_id = ts.id
+      INNER JOIN test_questions q ON q.id = tsq.question_id
+      LEFT JOIN question_options o ON o.question_id = q.id
+      WHERE ts.id = ?
+      ORDER BY q.id, o.option_key;
+    `;
+
+    let [rows] = await pool.query(sql, [testSetId]);
+
+    // 🔄 FALLBACK: If no test set found, try fetching by main Test ID
+    if (!rows || rows.length === 0) {
+      const rawQuestions = await this.getQuestionsByTestId(testId);
+
+      if (!rawQuestions || rawQuestions.length === 0) {
+        return {
+          test_set_id: null,
+          test_id: Number(testId),
+          exam_type: 'UNTIMED',
+          questions: []
+        };
+      }
+
+      return {
+        test_set_id: null,
+        test_id: Number(testId),
+        exam_type: 'UNTIMED',
+        questions: rawQuestions
+      };
+    }
+
+    // ================= GROUP QUESTIONS =================
+    const questionsMap = {};
+    for (const row of rows) {
+      if (!questionsMap[row.question_id]) {
+        questionsMap[row.question_id] = {
+          id: row.question_id,
+          question_text: row.question_text,
+          question_type: row.question_type,
+          answer: row.answer,
+          options: []
+        };
+      }
+      if (row.option_id) {
+        questionsMap[row.question_id].options.push({
+          option_id: row.option_id,
+          key: row.option_key,
+          value: row.option_value
+        });
+      }
+    }
+
+    return {
+      test_set_id: rows[0].test_set_id,
+      test_id: rows[0].test_id,
+      set_name: rows[0].set_name,
+      exam_type: rows[0].exam_type,
+      duration_minutes: rows[0].duration_minutes,
+      start_time: rows[0].start_time,
+      end_time: rows[0].end_time,
+      pass_threshold: rows[0].PASS_THRESHOLD,
+      total_questions: rows[0].total_questions,
+      questions: Object.values(questionsMap)
+    };
+  },
+
   async getTestAnswers(testId) {
     const sql = `
         SELECT 
@@ -262,7 +359,7 @@ async getTestsByStudent(studentId) {
 
     const [rows] = await pool.query(sql, [testId]);
     return rows;
-  },
+  }
 };
 
 module.exports = testModel;
