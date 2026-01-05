@@ -1,4 +1,6 @@
 
+
+
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -148,8 +150,9 @@ CREATE TABLE docs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     class_id INT NOT NULL,
     doc_title VARCHAR(255),
-    file_data LONGBLOB NOT NULL,     -- File binary data
-    file_type VARCHAR(255) NOT NULL,  -- MIME type (pdf, png, jpg, etc.)
+    file_data LONGBLOB NULL,         -- File binary data (kept as NULL for videos)
+    file_type VARCHAR(255) NOT NULL,  -- MIME type
+    file_path VARCHAR(500) DEFAULT NULL, -- Path to file on disk
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );

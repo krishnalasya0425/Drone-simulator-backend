@@ -21,4 +21,7 @@ router.get('/user/:userId', scoreController.getScoresByUserId);
 // Route to get scores by test ID
 router.get('/test/:testId', scoreController.getScoresByTestId);
 
+// Route to download comprehensive report for all sets in a test
+router.get('/report/all-sets/:testId', scoreController.downloadAllSetsReport);
+
 module.exports = router;

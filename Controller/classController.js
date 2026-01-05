@@ -1,5 +1,6 @@
 
 
+
 const { classModel, subSyllabusModel, syllabusModel, docsModel } = require('../Model/classModel');
 
 
@@ -174,11 +175,31 @@ const docsController = {
         return res.status(400).json({ message: "File is required" });
       }
 
+      const isVideo = req.file.mimetype.startsWith('video/');
+      let fileData = null;
+      let filePath = null;
+
+      if (isVideo) {
+        // For videos, we only save the path
+        filePath = req.file.path;
+      } else {
+        // For other files, we can still use BLOB if preferred, 
+        // but since we already saved it to disk via multer diskStorage, 
+        // we might as well just use the path or read it into a buffer.
+        // Let's read into buffer for backward compatibility with existing streamDoc logic for non-videos.
+        const fs = require('fs');
+        fileData = fs.readFileSync(req.file.path);
+
+        // If we want to keep small files in DB and big ones on disk:
+        // But the user specifically asked for "path of the video".
+      }
+
       await docsModel.uploadDoc(
         class_id,
         doc_title,
-        req.file.buffer,
-        req.file.mimetype
+        fileData,
+        req.file.mimetype,
+        filePath
       );
 
       res.json({ message: "File uploaded successfully" });
@@ -192,7 +213,19 @@ const docsController = {
     try {
       const { class_id } = req.params;
       const docs = await docsModel.getDocsList(class_id);
-      res.json({ docs });
+
+      // Add a full URL for videos stored on disk
+      const docsWithPaths = docs.map(doc => {
+        if (doc.file_path) {
+          return {
+            ...doc,
+            file_url: `${req.protocol}://${req.get('host')}/${doc.file_path.replace(/\\/g, '/')}`
+          };
+        }
+        return doc;
+      });
+
+      res.json({ docs: docsWithPaths });
     } catch (err) {
       res.status(500).json({ error: "Cannot fetch docs" });
     }
@@ -205,11 +238,25 @@ const docsController = {
 
       if (!doc) return res.status(404).send("Not found");
 
+      if (doc.file_path) {
+        // If it's stored on disk, we can redirect or send the file
+        const path = require('path');
+        const fs = require('fs');
+        const absolutePath = path.join(__dirname, '..', doc.file_path);
+
+        if (fs.existsSync(absolutePath)) {
+          return res.sendFile(absolutePath);
+        } else {
+          return res.status(404).send("Physical file not found");
+        }
+      }
+
       res.setHeader("Content-Type", doc.file_type);
       res.setHeader("Content-Disposition", `inline; filename="${doc.doc_title}"`);
 
-      res.send(doc.file_data); // RAW BUFFER — perfect for preview
+      res.send(doc.file_data); // RAW BUFFER for older BLOB data
     } catch (err) {
+      console.error(err);
       res.status(500).json({ error: "Failed to open file" });
     }
   },

@@ -158,6 +158,39 @@ const scoreModel = {
     };
   },
 
+  async getAllSetsResultsByTestId(testId) {
+    // 1. Get all test sets for this test
+    const [testSets] = await pool.query(
+      "SELECT id, set_name, total_questions, PASS_THRESHOLD as pass_threshold FROM test_sets WHERE test_id = ? ORDER BY id ASC",
+      [testId]
+    );
+
+    if (testSets.length === 0) return null;
+
+    // 2. Get test title
+    const [[test]] = await pool.query("SELECT title FROM tests WHERE id = ?", [testId]);
+    const testTitle = test ? test.title : "Test Report";
+
+    const resultsBySet = [];
+    const testSetModel = require('./testSetModel');
+
+    for (const set of testSets) {
+      const setResults = await this.getResultsByTestSetId(set.id);
+      const questions = await testSetModel.getQuestionsByTestSetId(set.id);
+
+      resultsBySet.push({
+        ...setResults,
+        questions: questions
+      });
+    }
+
+    return {
+      test_id: testId,
+      test_title: testTitle,
+      sets: resultsBySet
+    };
+  },
+
   // Legacy: Get scores by user ID (for backward compatibility)
   async getScoresByUserId(userId) {
     const query = `

@@ -126,12 +126,15 @@ async login(req, res) {
     const user = await authModel.login(armyId);
     console.log('User found:', user ? 'Yes' : 'No');
 
+
     if (!user) {
       console.log('No user found with armyId:', armyId);
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    if (process.env.NODE_ENV === 'production' && user.status.toLowerCase() !== 'Approved') {
+
+      
+    if (user.status.toLowerCase() !== 'approved') {
       console.log('Account not approved. Status:', user.status);
       const message =
         user.role.toLowerCase() === 'student'
