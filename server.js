@@ -59,6 +59,10 @@ app.use(cookieParser());
 // Parse JSON bodies
 app.use(bodyParser.json());
 
+// Serve static files from the uploads directory
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);

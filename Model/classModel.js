@@ -1,4 +1,5 @@
 
+
 const pool = require("../config/db");
 
 const classModel = {
@@ -120,20 +121,20 @@ const classModel = {
 };
 
 const docsModel = {
-  async uploadDoc(class_id, title, file_data, file_type) {
+  async uploadDoc(class_id, title, file_data, file_type, file_path = null) {
     await pool.query(
-      `INSERT INTO docs (class_id, doc_title, file_data, file_type)
-       VALUES (?, ?, ?, ?)`,
-      [class_id, title, file_data, file_type]
+      `INSERT INTO docs (class_id, doc_title, file_data, file_type, file_path)
+       VALUES (?, ?, ?, ?, ?)`,
+      [class_id, title, file_data, file_type, file_path]
     );
   },
 
   async getDocsList(class_id) {
     const [rows] = await pool.query(
-      `SELECT id, doc_title, file_type FROM docs WHERE class_id = ?`,
+      `SELECT id, doc_title, file_type, file_path FROM docs WHERE class_id = ?`,
       [class_id]
     );
-    return rows; // no file_data → prevents corruption
+    return rows;
   },
 
   async getDocById(id) {
@@ -142,18 +143,22 @@ const docsModel = {
   },
 
   async deleteDoc(id) {
+    // Also consider deleting the physical file if file_path exists
+    const [docRows] = await pool.query(`SELECT file_path FROM docs WHERE id = ?`, [id]);
+    if (docRows && docRows[0] && docRows[0].file_path) {
+      const fs = require('fs');
+      if (fs.existsSync(docRows[0].file_path)) {
+        fs.unlinkSync(docRows[0].file_path);
+      }
+    }
     return pool.query(`DELETE FROM docs WHERE id = ?`, [id]);
   },
 
   async updateDoc(id, doc_title) {
-    const query = `UPDATE classes SET doc_title = ? WHERE id = ?`;
+    const query = `UPDATE docs SET doc_title = ? WHERE id = ?`;
     const values = [doc_title, id];
     await pool.query(query, values);
   },
-
-
-
-
 };
 
 module.exports = { classModel, docsModel };

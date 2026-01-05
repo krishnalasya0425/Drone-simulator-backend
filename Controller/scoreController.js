@@ -1,7 +1,32 @@
 const scoreModel = require('../Model/scoreModel');
 const generateResultPdf = require('../utils/pdfGeneratorResult');
+const generateAllSetsReportPdf = require('../utils/pdfAllSetsReport');
 
 const scoreController = {
+
+    async downloadAllSetsReport(req, res) {
+        try {
+            const { testId } = req.params;
+
+            if (!testId) {
+                return res.status(400).json({ message: "testId is required" });
+            }
+
+            const data = await scoreModel.getAllSetsResultsByTestId(testId);
+
+            if (!data) {
+                return res.status(404).json({ message: "No sets found for this test" });
+            }
+
+            const fileName = `${data.test_title.replace(/\s+/g, '_')}_Full_Report`;
+
+            generateAllSetsReportPdf(data, fileName, res);
+
+        } catch (err) {
+            console.error("Download All Sets Report Error:", err);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    },
 
     async postScore(req, res) {
         try {
