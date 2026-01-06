@@ -1,14 +1,14 @@
 {
-  "2_2": {
-    "practice": "D:/arvr/Build",
-    "exercise": "D:/arvr/bmp/T-72 Oil Filter"
+  "1_12": {
+    "practice": "c:/build/T-72 Oil Filter",
+    "exercise": "c:/build/T-72 Oil Filter"
   },
-  "3_2": {
-    "practice": "D:/arvr/Build",
-    "exercise": "D:/arvr/bmp/T-72 Oil Filter"
+  "2_12": {
+    "practice": "c:/build/T-72 Oil Filter",
+    "exercise": "c:/build/T-72 Oil Filter"
   },
   "5_2": {
-    "practice": "D:/arvr/Build",
-    "exercise": "D:/arvr/bmp/T-72 Oil Filter"
+    "practice": "c:/build/T-72 Oil Filter",
+    "exercise": "c:/build/T-72 Oil Filter"
   }
 }

@@ -177,21 +177,12 @@ const docsController = {
 
       const isVideo = req.file.mimetype.startsWith('video/');
       let fileData = null;
-      let filePath = null;
+      let filePath = req.file.path; // Always available with diskStorage
 
-      if (isVideo) {
-        // For videos, we only save the path
-        filePath = req.file.path;
-      } else {
-        // For other files, we can still use BLOB if preferred, 
-        // but since we already saved it to disk via multer diskStorage, 
-        // we might as well just use the path or read it into a buffer.
-        // Let's read into buffer for backward compatibility with existing streamDoc logic for non-videos.
+      if (!isVideo) {
+        // Optional: still save binary for images if you want them in DB
         const fs = require('fs');
         fileData = fs.readFileSync(req.file.path);
-
-        // If we want to keep small files in DB and big ones on disk:
-        // But the user specifically asked for "path of the video".
       }
 
       await docsModel.uploadDoc(

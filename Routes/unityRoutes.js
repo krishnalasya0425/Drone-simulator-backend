@@ -1,3 +1,5 @@
+
+
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
@@ -24,13 +26,21 @@ function launchUnityBuild(res, buildFolder) {
   }
 
   const exePath = path.join(buildFolder, exeFile);
+  const exeName = exeFile.replace('.exe', '');
 
-  exec(`start "" "${exePath}"`, (err) => {
+  // Professional Launch Sequence:
+  // 1. Minimize all windows to clear the view (including browser)
+  // 2. Start the VR process
+  // 3. Wait for it to initialize
+  // 4. Force focus to the new window
+  const command = `powershell -Command "$shell = New-Object -ComObject Shell.Application; $shell.MinimizeAll(); Start-Process '${exePath}'; Start-Sleep -s 5; $wshell = New-Object -ComObject WScript.Shell; $wshell.AppActivate('${exeName}')"`;
+
+  exec(command, (err) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: "Failed to launch Unity build" });
+      return res.status(500).json({ message: "Failed to launch VR application" });
     }
-    res.json({ message: "Unity build launched successfully!" });
+    res.json({ message: "VR application launched and focused!" });
   });
 }
 
