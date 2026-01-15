@@ -19,27 +19,42 @@ const testSubSet = {
         durationMinutes,
         startTime,
         endTime,
-        passThreshold
+        passThreshold,
+        classId
       } = req.body;
 
       console.log(testId, req.body)
       // 🔒 Basic validation
       if (!testId || !numberOfSets || !questionsPerSet || !examType) {
         return res.status(400).json({
-          message: "Missing required fields"
+          message: "❌ Missing Required Fields: Please provide all required information (test ID, number of sets, questions per set, and exam type)."
         });
       }
 
       if (examType === 'TIMED' && (durationMinutes === undefined || durationMinutes === null)) {
         return res.status(400).json({
-          message: "Duration is required for TIMED exams"
+          message: "❌ Duration Required: Please specify the duration in minutes for this timed exam."
         });
       }
 
       if (examType === 'FIXED_TIME' && (!startTime || !endTime)) {
         return res.status(400).json({
-          message: "Start and end time are required for FIXED_TIME exams"
+          message: "❌ Time Window Required: Please specify both start time and end time for this fixed-time exam."
         });
+      }
+
+      // Check if class has students (if classId is provided)
+      if (classId) {
+        const { classModel } = require('../Model/classModel');
+        const students = await classModel.getStudentsByClass(classId);
+
+        if (!students || students.length === 0) {
+          return res.status(400).json({
+            message: "❌ No Students Found: This class has no students enrolled. Please add students to the class before generating test sets."
+          });
+        }
+
+        console.log(`Class ${classId} has ${students.length} students`);
       }
 
       await testSetModel.createTestSet({
@@ -54,13 +69,25 @@ const testSubSet = {
       });
 
       res.status(201).json({
-        message: "Subtests created successfully"
+        message: "✅ Test sets created successfully!"
       });
 
     } catch (err) {
       console.error("Create Subtest Error:", err);
+
+      // Provide user-friendly error messages
+      let errorMessage = "❌ Failed to create test sets: ";
+
+      if (err.message.includes("No questions")) {
+        errorMessage += "No questions found in the test. Please add questions to the test first before creating test sets.";
+      } else if (err.message.includes("duplicate")) {
+        errorMessage += "Test sets already exist. Please delete existing sets before creating new ones.";
+      } else {
+        errorMessage += err.message || "An unexpected error occurred. Please try again.";
+      }
+
       res.status(500).json({
-        message: err.message || "Failed to create subtests"
+        message: errorMessage
       });
     }
   },

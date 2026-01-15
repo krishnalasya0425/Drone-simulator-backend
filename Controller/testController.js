@@ -145,12 +145,46 @@ const testController = {
   async addQuestions(req, res) {
 
     const { testId, questions } = req.body;
+
+    // Validation
+    if (!testId) {
+      return res.status(400).json({
+        error: '❌ Test ID Required: Please select a test before uploading questions.'
+      });
+    }
+
+    if (!questions || questions.length === 0) {
+      return res.status(400).json({
+        error: '❌ No Questions Provided: Please add at least one question before submitting.'
+      });
+    }
+
     try {
+      // Check if test exists
+      const testExists = await testModel.getTestById(testId);
+      if (!testExists) {
+        return res.status(404).json({
+          error: '❌ Test Not Found: The selected test does not exist. Please create a test first before adding questions.'
+        });
+      }
+
       await testModel.addQuestionsToTest(testId, questions);
-      res.status(200).json({ message: 'Questions added successfully' });
+      res.status(200).json({
+        message: `✅ Success! ${questions.length} question(s) added successfully to the test.`
+      });
     } catch (err) {
       console.error("Error adding questions:", err);
-      res.status(500).json({ error: 'Internal server error' });
+
+      let errorMessage = '❌ Failed to add questions: ';
+      if (err.message.includes('duplicate')) {
+        errorMessage += 'Some questions already exist in this test.';
+      } else if (err.message.includes('foreign key')) {
+        errorMessage += 'Invalid test ID. Please select a valid test.';
+      } else {
+        errorMessage += err.message || 'An unexpected error occurred. Please try again.';
+      }
+
+      res.status(500).json({ error: errorMessage });
     }
   },
 

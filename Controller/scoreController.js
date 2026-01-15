@@ -84,7 +84,7 @@ const scoreController = {
             );
 
             const duration = studentData.started_at && studentData.submitted_at
-                ? Math.ceil((new Date(studentData.submitted_at) - new Date(studentData.started_at)) / 60000)
+                ? Math.round((new Date(studentData.submitted_at) - new Date(studentData.started_at)) / 60000)
                 : "--";
 
             res.status(200).json({
@@ -145,7 +145,7 @@ const scoreController = {
             const questions = await scoreModel.getStudentTestReview(student_id, test_set_id);
 
             const duration = studentData.started_at && studentData.submitted_at
-                ? Math.ceil((new Date(studentData.submitted_at) - new Date(studentData.started_at)) / 60000)
+                ? Math.round((new Date(studentData.submitted_at) - new Date(studentData.started_at)) / 60000)
                 : "--";
 
             const pdfData = {
