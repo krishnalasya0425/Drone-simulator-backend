@@ -11,13 +11,45 @@ const AuthController = {
     try {
       console.log('Registration attempt for:', { name, army_id });
 
+      // Validate required fields
+      if (!name || !army_id || !password) {
+        return res.status(400).json({
+          success: false,
+          message: '❌ Missing Required Fields: Please provide Name, Army ID, and Password to register.'
+        });
+      }
+
+      // Validate name
+      if (name.trim().length < 2) {
+        return res.status(400).json({
+          success: false,
+          message: '❌ Invalid Name: Name must be at least 2 characters long.'
+        });
+      }
+
+      // Validate Army ID format
+      if (army_id.trim().length < 3) {
+        return res.status(400).json({
+          success: false,
+          message: '❌ Invalid Army ID: Army ID must be at least 3 characters long.'
+        });
+      }
+
+      // Validate password strength
+      if (password.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: '❌ Weak Password: Password must be at least 6 characters long for security.'
+        });
+      }
+
       // Check if user already exists
       const existingUser = await authModel.findByArmyId(army_id);
       if (existingUser) {
         console.log('User already exists:', army_id);
         return res.status(400).json({
           success: false,
-          message: 'User with this Army ID already exists'
+          message: '❌ Army ID Already Registered: This Army ID is already registered in the system. Please use a different Army ID or login if this is your account.'
         });
       }
 
@@ -119,7 +151,7 @@ const AuthController = {
       if (!armyId || !password) {
         return res.status(400).json({
           success: false,
-          message: 'Please provide both Army ID and password'
+          message: '❌ Missing Credentials: Please provide both Army ID and password to login.'
         });
       }
 
@@ -129,17 +161,31 @@ const AuthController = {
 
       if (!user) {
         console.log('No user found with armyId:', armyId);
-        return res.status(401).json({ success: false, message: "Invalid credentials" });
+        return res.status(401).json({
+          success: false,
+          message: "❌ Invalid Army ID: No account found with this Army ID. Please check your Army ID or register if you don't have an account."
+        });
       }
 
 
 
       if (user.status.toLowerCase() !== 'approved') {
         console.log('Account not approved. Status:', user.status);
-        const message =
-          user.role.toLowerCase() === 'student'
-            ? "Account not approved. Please contact your instructor."
-            : "Account not approved. Please contact admin.";
+
+        let message = '';
+        if (user.status.toLowerCase() === 'pending') {
+          message = user.role.toLowerCase() === 'student'
+            ? "⏳ Account Pending Approval: Your account is awaiting approval from your instructor. Please contact your instructor to approve your account."
+            : "⏳ Account Pending Approval: Your account is awaiting approval from the admin. Please contact the admin to approve your account.";
+        } else if (user.status.toLowerCase() === 'denied') {
+          message = user.role.toLowerCase() === 'student'
+            ? "🚫 Account Denied: Your account has been denied by your instructor. Please contact your instructor for more information."
+            : "🚫 Account Denied: Your account has been denied by the admin. Please contact the admin for more information.";
+        } else {
+          message = user.role.toLowerCase() === 'student'
+            ? "⚠️ Account Not Approved: Your account is not approved. Please contact your instructor."
+            : "⚠️ Account Not Approved: Your account is not approved. Please contact the admin.";
+        }
 
         return res.status(403).json({ success: false, message });
       }
@@ -149,7 +195,10 @@ const AuthController = {
 
       if (!isMatch) {
         console.log('Password does not match');
-        return res.status(401).json({ success: false, message: "Invalid credentials" });
+        return res.status(401).json({
+          success: false,
+          message: "❌ Incorrect Password: The password you entered is incorrect. Please try again or reset your password if you've forgotten it."
+        });
       }
 
       const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
