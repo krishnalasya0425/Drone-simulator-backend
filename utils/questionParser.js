@@ -1,13 +1,5 @@
 
-/**
- * Parses raw text from PDF into structured question objects
- * Assumes format:
- * Q: Question text
- * A. Option A
- * B. Option B
- * ...
- * Answer: A                            
- */
+
 function parseQuestionsFromText(fullText) {
     const questions = [];
     const lines = fullText.split(/\r?\n/).map(l => l.trim()).filter(l => l);
