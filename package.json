@@ -2,6 +2,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.1",
+    "canvas": "^3.2.1",
     "check-disk-space": "^3.4.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -11,6 +12,10 @@
     "express-session": "^1.18.2",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
+    "pdf2json": "^4.0.2",
+    "pdfjs-dist": "^5.4.530",
     "pdfkit": "^0.17.2",
     "unzipper": "^0.12.3"
   }

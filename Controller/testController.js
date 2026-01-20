@@ -146,7 +146,7 @@ const testController = {
 
     const { testId, questions } = req.body;
 
-    // Validation
+   
     if (!testId) {
       return res.status(400).json({
         error: '❌ Test ID Required: Please select a test before uploading questions.'
@@ -160,7 +160,7 @@ const testController = {
     }
 
     try {
-      // Check if test exists
+      
       const testExists = await testModel.getTestById(testId);
       if (!testExists) {
         return res.status(404).json({

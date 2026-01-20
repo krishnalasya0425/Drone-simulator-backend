@@ -4,14 +4,14 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const AuthController = {
-  // REGISTER
+  
   async register(req, res) {
     const { name, regiment, batch_no, army_id, role = 'Student', password } = req.body;
 
     try {
       console.log('Registration attempt for:', { name, army_id });
 
-      // Validate required fields
+      
       if (!name || !army_id || !password) {
         return res.status(400).json({
           success: false,
@@ -19,7 +19,7 @@ const AuthController = {
         });
       }
 
-      // Validate name
+      
       if (name.trim().length < 2) {
         return res.status(400).json({
           success: false,
@@ -27,7 +27,7 @@ const AuthController = {
         });
       }
 
-      // Validate Army ID format
+      
       if (army_id.trim().length < 3) {
         return res.status(400).json({
           success: false,
@@ -35,7 +35,7 @@ const AuthController = {
         });
       }
 
-      // Validate password strength
+      
       if (password.length < 6) {
         return res.status(400).json({
           success: false,
@@ -43,7 +43,7 @@ const AuthController = {
         });
       }
 
-      // Check if user already exists
+      
       const existingUser = await authModel.findByArmyId(army_id);
       if (existingUser) {
         console.log('User already exists:', army_id);
@@ -53,12 +53,12 @@ const AuthController = {
         });
       }
 
-      // Hash password
+      
       console.log('Hashing password...');
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Create new user
+      
       console.log('Creating new user...');
       const newUser = await authModel.register({
         name,
@@ -91,16 +91,14 @@ const AuthController = {
     }
   },
 
-  // LOGIN
+  
   async login(req, res) {
     const { armyId, password } = req.body;
     console.log('Login attempt for armyId:', armyId);
 
     try {
 
-      // ==============================================
-      // 1. HARDCODED ADMIN LOGIN (skip database)
-      // ==============================================
+      
       if (armyId === "admin" && password === "admin") {
         console.log("Hardcoded admin login successful.");
 
@@ -144,9 +142,7 @@ const AuthController = {
         });
       }
 
-      // ==============================================
-      // 2. NORMAL USER LOGIN FLOW (DB authentication)
-      // ==============================================
+      
 
       if (!armyId || !password) {
         return res.status(400).json({
