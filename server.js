@@ -78,10 +78,21 @@ app.use("/subtest", testSetRoutes); // Added alias for frontend compatibility
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(5000, '0.0.0.0', () => {
+app.listen(5000, '0.0.0.0', async () => {
   console.log('Server running on port 5000');
   console.log('SERVER ABSOLUTE PATH:', __dirname);
   console.log('-------------------------------------------');
+
+  // Initialize Unity build file protection
+  try {
+    const buildProtector = require('./Services/unityBuildProtector');
+    console.log('🔒 Initializing Unity build file protection...');
+    await buildProtector.loadAndProtectAllBuilds();
+    console.log('✅ Unity build file protection active');
+  } catch (error) {
+    console.error('⚠️  Failed to initialize build protection:', error.message);
+    console.error('   Builds will not be protected from direct deletion');
+  }
 });
 
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

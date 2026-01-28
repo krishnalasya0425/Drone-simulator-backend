@@ -1,18 +1,13 @@
-
-
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const { exec } = require("child_process");
+const unityBuildController = require("../Controller/unityBuildController");
+const unityBuildModel = require("../Model/unityBuildModel");
 
 const router = express.Router();
 
-// Load the JSON mapping file
-const buildPaths = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../unityBuildPaths.json"))
-);
-
-
+// Helper function to launch Unity build
 function launchUnityBuild(res, buildFolder) {
   if (!fs.existsSync(buildFolder)) {
     return res.status(404).json({ message: "Build folder not found" });
@@ -44,34 +39,66 @@ function launchUnityBuild(res, buildFolder) {
   });
 }
 
-router.get("/practice/:classId/:instructorId", (req, res) => {
-  const { classId, instructorId } = req.params;
-  const key = `${classId}_${instructorId}`;
+// Launch practice build for a class
+router.get("/practice/:classId", async (req, res) => {
+  try {
+    const { classId } = req.params;
 
-  const classBuild = buildPaths[key];
+    // Get practice build from database
+    const build = await unityBuildModel.getBuildByClassAndType(classId, 'practice');
 
-  if (!classBuild || !classBuild.practice) {
-    return res.status(404).json({ message: "Practice build not found" });
+    if (!build) {
+      return res.status(404).json({
+        success: false,
+        message: "No practice build configured for this class. Please ask your instructor to upload a practice build."
+      });
+    }
+
+    const buildFolder = build.build_path;
+
+    launchUnityBuild(res, buildFolder);
+  } catch (error) {
+    console.error("Error launching practice build:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to launch practice build",
+      error: error.message
+    });
   }
-
-  const buildFolder = classBuild.practice; // ✅ STRING PATH
-
-  launchUnityBuild(res, buildFolder);
 });
 
-router.get("/exercise/:classId/:instructorId", (req, res) => {
-  const { classId, instructorId } = req.params;
-  const key = `${classId}_${instructorId}`;
+// Launch exercise build for a class
+router.get("/exercise/:classId", async (req, res) => {
+  try {
+    const { classId } = req.params;
 
-  const classBuild = buildPaths[key];
+    // Get exercise build from database
+    const build = await unityBuildModel.getBuildByClassAndType(classId, 'exercise');
 
-  if (!classBuild || !classBuild.exercise) {
-    return res.status(404).json({ message: "Exercise build not found" });
+    if (!build) {
+      return res.status(404).json({
+        success: false,
+        message: "No exercise build configured for this class. Please ask your instructor to upload an exercise build."
+      });
+    }
+
+    const buildFolder = build.build_path;
+
+    launchUnityBuild(res, buildFolder);
+  } catch (error) {
+    console.error("Error launching exercise build:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to launch exercise build",
+      error: error.message
+    });
   }
-
-  const buildFolder = classBuild.exercise; // ✅ STRING PATH
-
-  launchUnityBuild(res, buildFolder);
 });
+
+// Build management routes
+router.post("/builds", unityBuildController.upsertBuild);
+router.get("/builds/:class_id", unityBuildController.getBuildsByClass);
+router.get("/builds/:class_id/:build_type", unityBuildController.getBuildByClassAndType);
+router.delete("/builds/:class_id/:build_type", unityBuildController.deleteBuild);
 
 module.exports = router;
