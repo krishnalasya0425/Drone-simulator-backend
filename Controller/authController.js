@@ -4,14 +4,14 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const AuthController = {
-  
+
   async register(req, res) {
     const { name, regiment, batch_no, army_id, role = 'Student', password } = req.body;
 
     try {
       console.log('Registration attempt for:', { name, army_id });
 
-      
+
       if (!name || !army_id || !password) {
         return res.status(400).json({
           success: false,
@@ -19,7 +19,7 @@ const AuthController = {
         });
       }
 
-      
+
       if (name.trim().length < 2) {
         return res.status(400).json({
           success: false,
@@ -27,7 +27,7 @@ const AuthController = {
         });
       }
 
-      
+
       if (army_id.trim().length < 3) {
         return res.status(400).json({
           success: false,
@@ -35,7 +35,7 @@ const AuthController = {
         });
       }
 
-      
+
       if (password.length < 6) {
         return res.status(400).json({
           success: false,
@@ -43,7 +43,7 @@ const AuthController = {
         });
       }
 
-      
+
       const existingUser = await authModel.findByArmyId(army_id);
       if (existingUser) {
         console.log('User already exists:', army_id);
@@ -53,12 +53,12 @@ const AuthController = {
         });
       }
 
-      
+
       console.log('Hashing password...');
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      
+
       console.log('Creating new user...');
       const newUser = await authModel.register({
         name,
@@ -91,19 +91,19 @@ const AuthController = {
     }
   },
 
-  
+
   async login(req, res) {
     const { armyId, password } = req.body;
     console.log('Login attempt for armyId:', armyId);
 
     try {
 
-      
+
       if (armyId === "admin" && password === "admin") {
         console.log("Hardcoded admin login successful.");
 
         const adminUser = {
-          id: "admin",
+          id: 0, // Changed from "admin" to numeric 0
           army_id: "admin",
           role: "admin",
           name: "Admin",
@@ -142,7 +142,7 @@ const AuthController = {
         });
       }
 
-      
+
 
       if (!armyId || !password) {
         return res.status(400).json({

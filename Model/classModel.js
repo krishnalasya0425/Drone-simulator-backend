@@ -9,10 +9,14 @@ const classModel = {
       c.id,
       c.class_name,
       c.created_at,
+      c.instructor_id,
       u.id AS creator_id,
-      u.name AS created_by
+      u.name AS created_by,
+      i.id AS instructor_id,
+      i.name AS instructor_name
     FROM classes c
     JOIN users u ON c.created_by = u.id
+    LEFT JOIN users i ON c.instructor_id = i.id
     WHERE c.id = ?;
   `;
 
@@ -20,24 +24,36 @@ const classModel = {
     return rows[0];
   },
 
-  async createClass(classNameOrObj, createdBy) {
+  async createClass(classNameOrObj, createdBy, instructorId = null) {
     // Support both calling styles:
-    // 1. createClass({ class_name, created_by }) - object destructuring
-    // 2. createClass(className, createdBy) - traditional parameters
-    let className, instructorId;
+    // 1. createClass({ class_name, created_by, instructor_id }) - object destructuring
+    // 2. createClass(className, createdBy, instructorId) - traditional parameters
+    let className, adminId, assignedInstructorId;
 
     if (typeof classNameOrObj === 'object' && classNameOrObj !== null) {
       // Object destructuring style
       className = classNameOrObj.class_name;
-      instructorId = classNameOrObj.created_by;
+      adminId = classNameOrObj.created_by;
+      assignedInstructorId = classNameOrObj.instructor_id || null;
     } else {
       // Traditional parameters style
       className = classNameOrObj;
-      instructorId = createdBy;
+      adminId = createdBy;
+      assignedInstructorId = instructorId;
     }
 
-    const query = `INSERT INTO classes (class_name, created_by) VALUES (?, ?)`;
-    const [result] = await pool.query(query, [className, instructorId]);
+    // Check for duplicate class name
+    const [existing] = await pool.query(
+      'SELECT id FROM classes WHERE class_name = ?',
+      [className]
+    );
+
+    if (existing.length > 0) {
+      throw new Error('A class with this name already exists');
+    }
+
+    const query = `INSERT INTO classes (class_name, created_by, instructor_id) VALUES (?, ?, ?)`;
+    const [result] = await pool.query(query, [className, adminId, assignedInstructorId]);
     return result.insertId;
   },
 
@@ -49,20 +65,48 @@ const classModel = {
 
   async getClassesFiltered(instructorId) {
     let query = `
-    SELECT c.id, c.class_name
+    SELECT 
+      c.id, 
+      c.class_name,
+      c.instructor_id,
+      u.name AS created_by,
+      i.name AS instructor_name
     FROM classes c
     JOIN users u ON c.created_by = u.id
+    LEFT JOIN users i ON c.instructor_id = i.id
   `;
 
     const params = [];
 
     if (instructorId) {
-      query += ` WHERE c.created_by = ?`;
+      query += ` WHERE c.instructor_id = ?`;
       params.push(instructorId);
     }
 
     const [rows] = await pool.query(query, params);
     return rows;
+  },
+
+  async getAllClasses() {
+    const query = `
+      SELECT 
+        c.id, 
+        c.class_name,
+        c.instructor_id,
+        u.name AS created_by,
+        i.name AS instructor_name
+      FROM classes c
+      JOIN users u ON c.created_by = u.id
+      LEFT JOIN users i ON c.instructor_id = i.id
+      ORDER BY c.created_at DESC
+    `;
+    const [rows] = await pool.query(query);
+    return rows;
+  },
+
+  async updateClassInstructor(classId, instructorId) {
+    const query = `UPDATE classes SET instructor_id = ? WHERE id = ?`;
+    await pool.query(query, [instructorId, classId]);
   },
 
   async deleteClass(classId) {

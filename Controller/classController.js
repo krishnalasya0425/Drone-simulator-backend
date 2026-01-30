@@ -19,9 +19,18 @@ const classController = {
 
   async getClassesByInstructorId(req, res) {
     try {
-      const { id } = req.query;  // now reading ?id=123
+      const { id, role } = req.query;  // now reading ?id=123&role=admin/instructor
 
-      const classes = await classModel.getClassesFiltered(id);
+      let classes;
+      if (role === 'admin') {
+        // Admin sees all classes
+        classes = await classModel.getAllClasses();
+      } else if (id) {
+        // Instructor sees only their assigned classes
+        classes = await classModel.getClassesFiltered(id);
+      } else {
+        classes = await classModel.getAllClasses();
+      }
 
       res.status(200).json(classes);
     } catch (error) {
@@ -50,18 +59,37 @@ const classController = {
       console.log("BODY:", req.body);
       console.log("FILE:", req.file);
 
-      const { class_name, instructor_id } = req.body;
+      const { class_name, instructor_id, created_by } = req.body;
 
-      if (!class_name || !instructor_id) {
-        return res.status(400).json({ message: "Missing required fields" });
+      if (!class_name || !created_by) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing required fields: class_name and created_by are required"
+        });
       }
 
-      await classModel.createClass(class_name, instructor_id);
-
-      res.status(201).json({ message: "Class created successfully" });
+      try {
+        const classId = await classModel.createClass(class_name, created_by, instructor_id || null);
+        res.status(201).json({
+          success: true,
+          message: "Class created successfully",
+          classId
+        });
+      } catch (error) {
+        if (error.message.includes('already exists')) {
+          return res.status(409).json({
+            success: false,
+            message: "A class with this name already exists. Please choose a different name."
+          });
+        }
+        throw error;
+      }
     } catch (err) {
       console.error("adminAddClass error:", err);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
     }
   },
 
@@ -115,7 +143,15 @@ const classController = {
   async addStudents(req, res) {
     try {
       const { classId } = req.params;
-      const { studentIds } = req.body;
+      const { studentIds, userRole } = req.body;
+
+      // Only admin can add students
+      if (userRole !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: "Only administrators can add students to classes"
+        });
+      }
 
       if (!studentIds || !Array.isArray(studentIds)) {
         return res.status(400).json({ error: "Invalid student IDs" });
@@ -125,7 +161,10 @@ const classController = {
         await classModel.assignStudentToClass(studentId, classId);
       }
 
-      res.status(200).json({ message: "Students added successfully" });
+      res.status(200).json({
+        success: true,
+        message: "Students added successfully"
+      });
     } catch (error) {
       console.error("Error adding students:", error);
       res.status(500).json({ error: "Failed to add students" });
@@ -135,7 +174,15 @@ const classController = {
   async removeStudents(req, res) {
     try {
       const { classId } = req.params;
-      const { studentIds } = req.body;
+      const { studentIds, userRole } = req.body;
+
+      // Only admin can remove students
+      if (userRole !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: "Only administrators can remove students from classes"
+        });
+      }
 
       if (!studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
         return res.status(400).json({ error: "Invalid student IDs" });
@@ -143,7 +190,10 @@ const classController = {
 
       await classModel.removeStudentsFromClass(studentIds, classId);
 
-      res.status(200).json({ message: "Students removed successfully" });
+      res.status(200).json({
+        success: true,
+        message: "Students removed successfully"
+      });
     } catch (error) {
       console.error("Error removing students:", error);
       res.status(500).json({ error: "Failed to remove students" });

@@ -136,10 +136,12 @@ CREATE TABLE student_test_sets (
 
 CREATE TABLE classes (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    class_name VARCHAR(255) NOT NULL,
+    class_name VARCHAR(255) NOT NULL UNIQUE,
     created_by INT NOT NULL,
+    instructor_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 
@@ -200,6 +202,35 @@ CREATE TABLE unity_builds (
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
     FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
 );
+
+
+-- ============================================
+-- INSERT DEFAULT ADMIN USER
+-- ============================================
+-- This creates a system admin user with ID 0 to support:
+-- 1. Hardcoded admin login (admin/admin) in authController.js
+-- 2. Foreign key constraints when admin creates classes (created_by = 0)
+-- ============================================
+
+SET SESSION sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+
+INSERT INTO users (id, name, regiment, batch_no, army_id, role, password, status, created_at)
+VALUES (
+  0,
+  'System Admin',
+  'Administration',
+  'ADMIN',
+  'admin',
+  'Instructor',  -- Using 'Instructor' as role since ENUM doesn't have 'admin'
+  '$2b$10$dummyHashNotUsedForHardcodedAdmin',  -- Password not used (hardcoded login)
+  'Approved',
+  CURRENT_TIMESTAMP
+)
+ON DUPLICATE KEY UPDATE
+  name = 'System Admin',
+  status = 'Approved';
+
+SET SESSION sql_mode = DEFAULT;
 
 
 SHOW VARIABLES LIKE 'max_allowed_packet';
