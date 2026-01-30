@@ -17,6 +17,7 @@ const scoreRoutes = require('./Routes/scoreRoutes');
 const classRoutes = require('./Routes/classROutes');
 const otpRoutes = require("./Routes/otpRoutes");
 const testSetRoutes = require("./Routes/testSetRoutes");
+const progressRoutes = require("./Routes/progressRoutes");
 
 const app = express();
 
@@ -54,10 +55,10 @@ app.use(cors({
 }));
 
 
-app.use(express.json());
+app.use(express.json({ limit: '30mb' }));
 app.use(cookieParser());
 // Parse JSON bodies
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '30mb' }));
 
 // Serve static files from the uploads directory
 const path = require('path');
@@ -73,6 +74,7 @@ app.use("/otp", otpRoutes);
 app.use('/unity', unityRoutes);
 app.use("/test-sets", testSetRoutes);
 app.use("/subtest", testSetRoutes); // Added alias for frontend compatibility
+app.use("/progress", progressRoutes); // Student progress tracking
 
 
 

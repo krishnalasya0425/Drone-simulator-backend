@@ -119,7 +119,8 @@ const classModel = {
     const query = `
       SELECT 
         c.id,
-        c.class_name
+        c.class_name,
+        c.instructor_id
       FROM assigned_classes ac
       JOIN classes c ON ac.class_id = c.id
       JOIN users u ON ac.student_id = u.id

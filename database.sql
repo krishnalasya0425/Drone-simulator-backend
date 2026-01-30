@@ -234,3 +234,43 @@ SET SESSION sql_mode = DEFAULT;
 
 
 SHOW VARIABLES LIKE 'max_allowed_packet';
+
+-- ============================================
+-- STUDENT PROGRESS TRACKING TABLES
+-- ============================================
+
+CREATE TABLE student_document_progress (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    doc_id INT NOT NULL,
+    class_id INT NOT NULL,
+    completion_percentage DECIMAL(5,2) DEFAULT 0,
+    total_pages INT,
+    pages_read INT,
+    view_duration_seconds INT DEFAULT 0,
+    video_duration_seconds INT,
+    video_watched_seconds INT,
+    first_accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    total_access_count INT DEFAULT 0,
+    UNIQUE KEY unique_student_doc (student_id, doc_id),
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (doc_id) REFERENCES docs(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE student_class_progress (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    class_id INT NOT NULL,
+    overall_completion_percentage DECIMAL(5,2) DEFAULT 0,
+    pdf_completion_percentage DECIMAL(5,2) DEFAULT 0,
+    image_completion_percentage DECIMAL(5,2) DEFAULT 0,
+    video_completion_percentage DECIMAL(5,2) DEFAULT 0,
+    total_documents INT DEFAULT 0,
+    completed_documents INT DEFAULT 0,
+    last_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_student_class (student_id, class_id),
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+);

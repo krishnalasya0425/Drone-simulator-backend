@@ -88,7 +88,7 @@ const testModel = {
     const params = [];
 
     if (instructorId) {
-      query += ` WHERE t.created_by = ?`;
+      query += ` WHERE c.instructor_id = ?`;
       params.push(instructorId);
     }
 
@@ -125,7 +125,8 @@ const testModel = {
 
           t.id AS test_id,
           t.title AS test_title,
-          c.class_name
+          c.class_name,
+          c.instructor_id
 
         FROM student_test_sets sts
         JOIN test_sets ts 
