@@ -23,8 +23,14 @@ const classController = {
 
       let classes;
       if (role === 'admin') {
-        // Admin sees all classes
-        classes = await classModel.getAllClasses();
+        // Admin can filter by instructor or see all
+        if (id) {
+          // Admin filtering by specific instructor
+          classes = await classModel.getClassesFiltered(id);
+        } else {
+          // Admin seeing all classes
+          classes = await classModel.getAllClasses();
+        }
       } else if (id) {
         // Instructor sees only their assigned classes
         classes = await classModel.getClassesFiltered(id);

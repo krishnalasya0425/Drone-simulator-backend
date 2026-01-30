@@ -40,29 +40,24 @@ const testSubSet = {
 
       // 1. Validate Students exist
       let students = [];
-      if (classId) {
+
+      // Fetch test details to check for individual student target
+      const [[testInfo]] = await conn.query('SELECT class_id, individual_student_id FROM tests WHERE id = ?', [testId]);
+
+      if (testInfo && testInfo.individual_student_id) {
+        // Individual test! ONLY this student
+        students = [{ student_id: testInfo.individual_student_id }];
+      } else if (classId || (testInfo && testInfo.class_id)) {
+        const effectiveClassId = classId || testInfo.class_id;
         const [rows] = await conn.query(
           `SELECT student_id FROM assigned_classes WHERE class_id = ?`,
-          [classId]
+          [effectiveClassId]
         );
         students = rows;
-        if (students.length === 0) {
-          throw new Error("No students assigned to this class");
-        }
-      } else {
-        // Fallback: try to find classId from testId
-        const [[testRow]] = await conn.query('SELECT class_id FROM tests WHERE id = ?', [testId]);
-        if (testRow && testRow.class_id) {
-          const [rows] = await conn.query(
-            `SELECT student_id FROM assigned_classes WHERE class_id = ?`,
-            [testRow.class_id]
-          );
-          students = rows;
-        }
+      }
 
-        if (students.length === 0) {
-          throw new Error("No students found for this test/class");
-        }
+      if (students.length === 0) {
+        throw new Error("No students found for this test/class");
       }
 
       // Check existing sets to start naming (Set A, B, etc)

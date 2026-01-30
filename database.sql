@@ -19,11 +19,13 @@ CREATE TABLE tests (
 
     class_id INT NOT NULL,
     created_by INT NOT NULL,
+    individual_student_id INT NULL,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_tests_class FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
-    CONSTRAINT fk_tests_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_tests_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_tests_individual_student FOREIGN KEY (individual_student_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 
@@ -273,4 +275,22 @@ CREATE TABLE student_class_progress (
     UNIQUE KEY unique_student_class (student_id, class_id),
     FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE retest_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    class_id INT NOT NULL,
+    test_id INT NOT NULL,
+    score INT NOT NULL,
+    total_questions INT NOT NULL,
+    attempted_at TIMESTAMP NULL,
+    status ENUM('Pending', 'Approved', 'Completed', 'Denied') DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    instructor_id INT NOT NULL,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE
 );

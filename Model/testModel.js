@@ -125,6 +125,7 @@ const testModel = {
 
           t.id AS test_id,
           t.title AS test_title,
+          c.id AS class_id,
           c.class_name,
           c.instructor_id
 
@@ -148,10 +149,10 @@ const testModel = {
     }
   },
 
-  async createTest(title, ID, classId) {
+  async createTest(title, ID, classId, individualStudentId = null) {
     try {
-      const insertQuery = "INSERT INTO tests (title,created_by, class_id) VALUES (?,?,?)";
-      const [insertResult] = await pool.query(insertQuery, [title, ID, classId]);
+      const insertQuery = "INSERT INTO tests (title, created_by, class_id, individual_student_id) VALUES (?,?,?,?)";
+      const [insertResult] = await pool.query(insertQuery, [title, ID, classId, individualStudentId]);
 
       // Return only ID
       return insertResult.insertId;

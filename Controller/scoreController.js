@@ -94,6 +94,7 @@ const scoreController = {
                 score: studentData.score,
                 total_questions: studentData.total_questions,
                 pass_threshold: summary.pass_threshold,
+                exam_type: summary.exam_type,
                 status: studentData.status,
                 submitted_at: studentData.submitted_at,
                 time_taken: duration,

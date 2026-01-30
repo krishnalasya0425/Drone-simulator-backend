@@ -5,6 +5,9 @@ const userController = require('../Controller/userController');
 // GET all
 router.get('/', userController.getAllUsers);
 
+// GET user by ID
+router.get('/id/:id', userController.getUserById);
+
 // DOWNLOAD profile
 router.get('/download-profile/:id', userController.downloadProfilePdf);
 

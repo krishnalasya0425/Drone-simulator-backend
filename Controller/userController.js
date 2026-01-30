@@ -31,6 +31,21 @@ const UserController = {
     }
   },
 
+  // GET user by ID
+  async getUserById(req, res) {
+    try {
+      const { id } = req.params;
+      const user = await UserModel.getById(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+
   // CREATE new user
   async createUser(req, res) {
     try {

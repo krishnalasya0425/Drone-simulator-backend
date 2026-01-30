@@ -112,7 +112,7 @@ const scoreModel = {
   async getResultsByTestSetId(testSetId) {
     // 1. Get test set info
     const [testSetRows] = await pool.query(
-      "SELECT id, test_id, set_name, total_questions, PASS_THRESHOLD as pass_threshold FROM test_sets WHERE id = ?",
+      "SELECT id, test_id, set_name, total_questions, exam_type, PASS_THRESHOLD as pass_threshold FROM test_sets WHERE id = ?",
       [testSetId]
     );
 
@@ -142,6 +142,7 @@ const scoreModel = {
       test_set_id: testSetId,
       test_id: testSet.test_id,
       set_name: testSet.set_name,
+      exam_type: testSet.exam_type,
       pass_threshold: testSet.pass_threshold,
       results: rows.map(r => ({
         student_id: r.student_id,

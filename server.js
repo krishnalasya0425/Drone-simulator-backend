@@ -65,6 +65,8 @@ const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
+const retestRoutes = require("./Routes/retestRoutes");
+
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/tests', testsRoutes);
@@ -75,6 +77,8 @@ app.use('/unity', unityRoutes);
 app.use("/test-sets", testSetRoutes);
 app.use("/subtest", testSetRoutes); // Added alias for frontend compatibility
 app.use("/progress", progressRoutes); // Student progress tracking
+app.use("/retest", retestRoutes);
+
 
 
 

@@ -129,9 +129,15 @@ const testController = {
 
 
   async createTest(req, res) {
-    const { title, ID, classId } = req.body;
+    const { title, ID, classId, individualStudentId, requestId } = req.body;
     try {
-      const testId = await testModel.createTest(title, ID, classId);
+      const testId = await testModel.createTest(title, ID, classId, individualStudentId);
+
+      if (requestId) {
+        const retestModel = require('../Model/retestModel');
+        await retestModel.updateRequestStatus(requestId, 'Completed');
+      }
+
       res.status(201).json({ testId });
     }
     catch (err) {
@@ -146,7 +152,7 @@ const testController = {
 
     const { testId, questions } = req.body;
 
-   
+
     if (!testId) {
       return res.status(400).json({
         error: '❌ Test ID Required: Please select a test before uploading questions.'
@@ -160,7 +166,7 @@ const testController = {
     }
 
     try {
-      
+
       const testExists = await testModel.getTestById(testId);
       if (!testExists) {
         return res.status(404).json({
