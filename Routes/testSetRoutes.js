@@ -41,6 +41,10 @@ router.post('/:testId', testSubController.createSubTest);
 // Expects form-data with 'pdfs' field containing multiple files
 router.post('/generate-from-pdf/:testId', upload.array('pdfs'), testSubController.createSetsFromPdf);
 
+// New route for question bank-based set generation
+// Expects form-data with single 'questionBank' PDF file
+router.post('/generate-from-question-bank/:testId', upload.single('questionBank'), testSubController.createSetsFromQuestionBank);
+
 router.get('/download/:id', testSubController.downloadPdf);
 router.get('/download-results/:id', testSubController.downloadSetResults);
 router.get('/:testId', testSubController.getSubTest);

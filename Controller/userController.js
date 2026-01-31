@@ -92,10 +92,50 @@ const UserController = {
   async deleteUser(req, res) {
     try {
       const { id } = req.params;
+
+      // Check if user exists and get their role
+      const user = await UserModel.getById(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // If deleting an instructor, check for related classes
+      if (user.role === 'Instructor') {
+        const [classes] = await require('../config/db').query(
+          'SELECT COUNT(*) as count FROM classes WHERE instructor_id = ?',
+          [id]
+        );
+
+        if (classes[0].count > 0) {
+          return res.status(400).json({
+            message: `Cannot delete instructor. This instructor has ${classes[0].count} class(es) assigned. Please reassign or delete these classes first.`,
+            hasClasses: true,
+            classCount: classes[0].count
+          });
+        }
+      }
+
+      // If deleting a student, remove from assigned_classes first
+      if (user.role === 'Student') {
+        await require('../config/db').query(
+          'DELETE FROM assigned_classes WHERE student_id = ?',
+          [id]
+        );
+      }
+
       await UserModel.deleteUser(id);
-      res.json({ message: "User deleted" });
+      res.json({ message: "User deleted successfully" });
     } catch (err) {
       console.error(err);
+
+      // Handle foreign key constraint errors
+      if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+        return res.status(400).json({
+          message: "Cannot delete user. This user has related records in the system. Please remove all related data first.",
+          error: "FOREIGN_KEY_CONSTRAINT"
+        });
+      }
+
       res.status(500).json({ message: "Server error" });
     }
   },

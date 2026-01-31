@@ -60,7 +60,18 @@ const retestModel = {
                        AND sts.submitted_at IS NOT NULL
                      ORDER BY sts.submitted_at DESC 
                      LIMIT 1)
-                ) as attempted_at
+                ) as attempted_at,
+                (SELECT sts.score 
+                 FROM tests retest 
+                 JOIN test_sets ts ON ts.test_id = retest.id
+                 JOIN student_test_sets sts ON sts.test_set_id = ts.id 
+                 WHERE retest.individual_student_id = r.student_id 
+                   AND retest.class_id = r.class_id 
+                   AND retest.created_at > r.created_at
+                   AND sts.student_id = r.student_id
+                   AND sts.score IS NOT NULL
+                 ORDER BY retest.created_at DESC
+                 LIMIT 1) as retest_score
             FROM retest_requests r
             JOIN users u ON r.student_id = u.id
             JOIN classes c ON r.class_id = c.id

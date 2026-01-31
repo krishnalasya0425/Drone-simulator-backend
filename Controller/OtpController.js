@@ -79,10 +79,28 @@ const OtpController = {
 
   // 4️⃣ Admin dashboard OTP list
   async getOtpForAdmin(req, res) {
-    const { role } = req.query;
+    const { role, instructorId } = req.query;
 
     try {
-      const users = await UserModel.getByRole(role);
+      let users = await UserModel.getByRole(role);
+
+      // If instructor is requesting students, filter by their classes only
+      if (role === 'student' && instructorId) {
+        const pool = require('../config/db');
+
+        // Get students enrolled in instructor's classes
+        const [studentIds] = await pool.query(`
+          SELECT DISTINCT ac.student_id
+          FROM classes c
+          JOIN assigned_classes ac ON c.id = ac.class_id
+          WHERE c.instructor_id = ?
+        `, [instructorId]);
+
+        const allowedStudentIds = studentIds.map(row => row.student_id);
+
+        // Filter users to only include students in instructor's classes
+        users = users.filter(u => allowedStudentIds.includes(u.id));
+      }
 
       const otpData = await Promise.all(
         users.map(async (u) => {

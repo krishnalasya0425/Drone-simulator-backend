@@ -195,6 +195,221 @@ const testSubSet = {
     }
   },
 
+  /**
+   * Create multiple test sets from a single question bank PDF
+   * Questions are randomly distributed across sets
+   * Sets are randomly assigned to students
+   */
+  async createSetsFromQuestionBank(req, res) {
+    console.log('---- Creating Sets from Question Bank ----');
+    console.log('Body:', req.body);
+    console.log('File:', req.file);
+
+    const testId = Number(req.params.testId);
+    if (!testId || !req.file) {
+      return res.status(400).json({ message: "Missing test ID or question bank PDF file" });
+    }
+
+    const {
+      numberOfSets,
+      questionsPerSet,
+      examType,
+      durationMinutes,
+      startTime,
+      endTime,
+      passThreshold,
+      classId
+    } = req.body;
+
+    // Validation
+    if (!numberOfSets || !questionsPerSet) {
+      return res.status(400).json({
+        message: "Please specify number of sets and questions per set"
+      });
+    }
+
+    const numSets = parseInt(numberOfSets);
+    const numQuestionsPerSet = parseInt(questionsPerSet);
+
+    if (numSets < 1 || numQuestionsPerSet < 1) {
+      return res.status(400).json({
+        message: "Number of sets and questions per set must be at least 1"
+      });
+    }
+
+    const conn = await pool.getConnection();
+
+    try {
+      await conn.beginTransaction();
+
+      // 1. Extract and parse all questions from the question bank PDF
+      const dataBuffer = fs.readFileSync(req.file.path);
+
+      let textContent;
+      try {
+        textContent = await extractTextFromPdfBuffer(dataBuffer);
+      } catch (pdfErr) {
+        console.error(`PDF Parsing failed:`, pdfErr);
+        throw new Error(`Failed to parse PDF file. The file might be corrupted or in an unsupported format. Error: ${pdfErr.message}`);
+      }
+
+      console.log(`[DEBUG] Text Content Preview:`, textContent.text.substring(0, 500));
+      const allQuestions = parseQuestionsFromText(textContent.text);
+      console.log(`Parsed ${allQuestions.length} questions from question bank`);
+
+      if (allQuestions.length === 0) {
+        throw new Error(`No questions found in the question bank PDF. Please make sure the PDF text is selectable and follows the format: '1. Question... A. Option...'`);
+      }
+
+      // Check if we have enough questions
+      const totalQuestionsNeeded = numSets * numQuestionsPerSet;
+      if (allQuestions.length < numQuestionsPerSet) {
+        throw new Error(`Question bank has only ${allQuestions.length} questions, but you need at least ${numQuestionsPerSet} questions per set.`);
+      }
+
+      console.log(`Total questions in bank: ${allQuestions.length}`);
+      console.log(`Questions needed: ${numQuestionsPerSet} per set × ${numSets} sets`);
+
+      // 2. Get students for assignment
+      let students = [];
+      const [[testInfo]] = await conn.query('SELECT class_id, individual_student_id FROM tests WHERE id = ?', [testId]);
+
+      if (testInfo && testInfo.individual_student_id) {
+        students = [{ student_id: testInfo.individual_student_id }];
+      } else if (classId || (testInfo && testInfo.class_id)) {
+        const effectiveClassId = classId || testInfo.class_id;
+        const [rows] = await conn.query(
+          `SELECT student_id FROM assigned_classes WHERE class_id = ?`,
+          [effectiveClassId]
+        );
+        students = rows;
+      }
+
+      if (students.length === 0) {
+        throw new Error("No students found for this test/class");
+      }
+
+      console.log(`Found ${students.length} students to assign sets to`);
+
+      // 3. Determine set naming
+      const [existingSets] = await conn.query(
+        `SELECT set_name FROM test_sets WHERE test_id = ? ORDER BY id ASC`,
+        [testId]
+      );
+
+      let startIndex = 0;
+      if (existingSets.length > 0) {
+        const lastSetName = existingSets[existingSets.length - 1].set_name;
+        const lastChar = lastSetName.trim().slice(-1);
+        startIndex = lastChar.charCodeAt(0) - 65 + 1;
+      }
+
+      const createdSetIds = [];
+
+      // 4. Create sets with randomly distributed questions
+      for (let setIdx = 0; setIdx < numSets; setIdx++) {
+        const charCode = 65 + startIndex + setIdx;
+        const setName = `Set ${String.fromCharCode(charCode)}`;
+
+        // Randomly select questions for this set
+        const shuffledQuestions = [...allQuestions].sort(() => Math.random() - 0.5);
+        const selectedQuestions = shuffledQuestions.slice(0, numQuestionsPerSet);
+
+        console.log(`Creating ${setName} with ${selectedQuestions.length} questions`);
+
+        // Create Test Set
+        const [setResult] = await conn.query(
+          `INSERT INTO test_sets
+            (test_id, set_name, total_questions, exam_type, duration_minutes, start_time, end_time, PASS_THRESHOLD)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            testId,
+            setName,
+            selectedQuestions.length,
+            examType,
+            examType === 'TIMED' ? durationMinutes : null,
+            examType === 'FIXED_TIME' ? startTime : null,
+            examType === 'FIXED_TIME' ? endTime : null,
+            passThreshold
+          ]
+        );
+        const testSetId = setResult.insertId;
+        createdSetIds.push(testSetId);
+
+        // Insert Questions and Link to Set
+        for (const q of selectedQuestions) {
+          // Insert into test_questions (library)
+          const [qResult] = await conn.query(
+            `INSERT INTO test_questions (test_id, question_text, question_type, answer)
+                 VALUES (?, ?, ?, ?)`,
+            [testId, q.question_text, q.type, q.answer]
+          );
+          const qId = qResult.insertId;
+
+          // Insert options
+          if (q.options && q.options.length > 0) {
+            for (const opt of q.options) {
+              await conn.query(
+                `INSERT INTO question_options (question_id, option_key, option_value)
+                         VALUES (?, ?, ?)`,
+                [qId, opt.label, opt.text]
+              );
+            }
+          }
+
+          // Link to Test Set
+          await conn.query(
+            `INSERT INTO test_set_questions (test_set_id, test_id, question_id)
+                 VALUES (?, ?, ?)`,
+            [testSetId, testId, qId]
+          );
+        }
+      }
+
+      // 5. Randomly Assign Sets to Students
+      console.log(`Randomly assigning ${createdSetIds.length} sets to ${students.length} students`);
+
+      for (const student of students) {
+        const randomSetId = createdSetIds[Math.floor(Math.random() * createdSetIds.length)];
+
+        try {
+          await conn.query(
+            `INSERT INTO student_test_sets (test_set_id, student_id)
+                 VALUES (?, ?)`,
+            [randomSetId, student.student_id]
+          );
+        } catch (e) {
+          console.log(`Student ${student.student_id} might already be assigned. Ignoring.`);
+        }
+      }
+
+      // Cleanup: delete temp file
+      fs.unlinkSync(req.file.path);
+
+      await conn.commit();
+      res.status(201).json({
+        message: `✅ Successfully created ${createdSetIds.length} sets from question bank with ${numQuestionsPerSet} questions each and assigned to ${students.length} students.`,
+        setIds: createdSetIds,
+        totalQuestions: allQuestions.length,
+        questionsPerSet: numQuestionsPerSet,
+        numberOfSets: numSets
+      });
+
+    } catch (err) {
+      await conn.rollback();
+      console.error("Error creating sets from question bank:", err);
+
+      // Cleanup file if error
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+
+      res.status(500).json({ message: err.message || "Failed to create sets from question bank" });
+    } finally {
+      conn.release();
+    }
+  },
+
 
   async createSubTest(req, res) {
 
