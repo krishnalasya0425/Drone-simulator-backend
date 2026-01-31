@@ -28,9 +28,10 @@ module.exports = function generateResultPdf(data, fileName, res) {
     doc.moveDown(0.3);
 
     doc.fontSize(11).font('Helvetica').text(`Name: ${data.student_name}`);
-    doc.text(`Army ID: ${data.army_id}`);
-    doc.text(`Regiment: ${data.regiment}`);
-    doc.text(`Batch: ${data.batch_no}`);
+    doc.text(`Rank: ${data.rank || 'N/A'}`);
+    doc.text(`Army No: ${data.army_no || 'N/A'}`);
+    doc.text(`Unit: ${data.unit || data.regiment}`);
+    doc.text(`Course No: ${data.course_no || data.batch_no}`);
     doc.moveDown(0.5);
 
     // ================= SUMMARY CARDS =================

@@ -47,7 +47,7 @@ const retestModel = {
                 r.updated_at,
                 r.instructor_id,
                 u.name as student_name, 
-                u.army_id, 
+                u.army_no, 
                 c.class_name, 
                 t.title as test_title,
                 COALESCE(
@@ -122,7 +122,7 @@ const retestModel = {
                 r.updated_at,
                 r.instructor_id,
                 u.name as student_name, 
-                u.army_id, 
+                u.army_no, 
                 c.class_name, 
                 original_test.title as original_test_title,
                 COALESCE(

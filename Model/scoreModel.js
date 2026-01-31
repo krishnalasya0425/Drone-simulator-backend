@@ -125,9 +125,9 @@ const scoreModel = {
       SELECT
         sts.student_id,
         u.name,
-        u.army_id,
-        u.regiment,
-        u.batch_no,
+        u.army_no,
+        u.unit,
+        u.course_no,
         sts.score,
         sts.started_at,
         sts.submitted_at
@@ -147,9 +147,9 @@ const scoreModel = {
       results: rows.map(r => ({
         student_id: r.student_id,
         name: r.name,
-        regiment: r.regiment,
-        batch_no: r.batch_no,
-        army_id: r.army_id,
+        unit: r.unit,
+        course_no: r.course_no,
+        army_no: r.army_no,
         score: r.score,
         started_at: r.started_at,
         submitted_at: r.submitted_at,

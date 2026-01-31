@@ -28,9 +28,10 @@ module.exports = function generateStudentProfilePdf(data, fileName, res) {
     doc.rect(40, startY, 510, 100).fill('#f8fafc').stroke('#e5e7eb');
 
     doc.fillColor('#074F06').fontSize(18).font('Helvetica-Bold').text(data.name, 60, startY + 20);
-    doc.fillColor('#374151').fontSize(11).font('Helvetica').text(`Army ID: ${data.army_id || 'N/A'}`, 60, startY + 45);
-    doc.text(`Regiment: ${data.regiment || 'N/A'}`, 60, startY + 60);
-    doc.text(`Batch Number: ${data.batch_no || 'N/A'}`, 60, startY + 75);
+    doc.fillColor('#374151').fontSize(11).font('Helvetica').text(`Rank: ${data.rank || 'N/A'}`, 60, startY + 45);
+    doc.text(`Army No: ${data.army_no || data.armyId || 'N/A'}`, 60, startY + 58);
+    doc.text(`Unit: ${data.unit || 'N/A'}`, 60, startY + 71);
+    doc.text(`Course No: ${data.course_no || 'N/A'}`, 60, startY + 84);
 
     doc.y = startY + 120;
 

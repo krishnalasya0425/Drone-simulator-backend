@@ -136,9 +136,10 @@ const classModel = {
       SELECT 
         u.id,
         u.name,
-        u.army_id,
-        u.batch_no,
-        u.regiment
+        u.\`rank\`,
+        u.army_no,
+        u.course_no,
+        u.unit
       FROM assigned_classes ac
       JOIN users u ON ac.student_id = u.id
       WHERE ac.class_id = ?;

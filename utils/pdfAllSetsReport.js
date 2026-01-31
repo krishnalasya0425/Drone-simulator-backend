@@ -74,7 +74,7 @@ module.exports = function generateAllSetsReportPdf(data, fileName, res) {
         doc.fontSize(9).font('Helvetica-Bold').fillColor('#074F06');
         doc.text("#", colX.sNo, tableTop);
         doc.text("STUDENT INFORMATION", colX.name, tableTop);
-        doc.text("BATCH / REGIMENT", colX.batch, tableTop);
+        doc.text("COURSE / UNIT", colX.batch, tableTop);
         doc.text("PERFORMANCE", colX.score, tableTop);
         doc.text("STATUS", colX.status, tableTop);
 
@@ -103,9 +103,9 @@ module.exports = function generateAllSetsReportPdf(data, fileName, res) {
             doc.fontSize(8);
             doc.fillColor('black').text(index + 1, colX.sNo, rowY);
             doc.font('Helvetica-Bold').text(r.name, colX.name, rowY);
-            doc.font('Helvetica').fontSize(7).fillColor('gray').text(r.army_id, colX.name, rowY + 9);
-            doc.fillColor('black').fontSize(8).text(r.batch_no || "---", colX.batch, rowY);
-            doc.fontSize(7).fillColor('gray').text(r.regiment || "---", colX.batch, rowY + 9);
+            doc.font('Helvetica').fontSize(7).fillColor('gray').text(`${r.rank || ''} - ${r.army_no}`, colX.name, rowY + 9);
+            doc.fillColor('black').fontSize(8).text(r.unit || "---", colX.batch, rowY);
+            doc.fontSize(7).fillColor('gray').text(r.course_no || "---", colX.batch, rowY + 9);
             doc.fillColor('black').fontSize(8).text(r.score !== null ? `${r.score} / ${r.total_questions}` : "---", colX.score, rowY);
 
             const statusColor = r.status === 'PASS' ? '#047857' : (r.status === 'FAIL' ? '#b91c1c' : '#b45309');

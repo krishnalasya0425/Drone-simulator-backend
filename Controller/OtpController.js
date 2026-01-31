@@ -12,10 +12,10 @@ const OtpController = {
 
   // 1️⃣ Student clicks forgot password
   async requestOtp(req, res) {
-    const { armyId } = req.body;
+    const { armyNo } = req.body;
 
     try {
-      const user = await UserModel.getByArmyId(armyId);
+      const user = await UserModel.getByArmyNo(armyNo);
 
       if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -31,10 +31,10 @@ const OtpController = {
 
   // 2️⃣ Reset password using OTP
   async resetPassword(req, res) {
-    const { armyId, otp, newPassword } = req.body;
+    const { armyNo, otp, newPassword } = req.body;
 
     try {
-      const user = await UserModel.getByArmyId(armyId);
+      const user = await UserModel.getByArmyNo(armyNo);
       if (!user) return res.status(404).json({ message: "User not found" });
 
       const validOtp = await OtpModel.getValidOtp(user.id, otp);

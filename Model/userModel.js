@@ -5,11 +5,11 @@ const UserModel = {
 
   // Create a new user
   async createUser(data) {
-    const { name, regiment, batch_no, army_id, role, password } = data;
+    const { name, rank, unit, course_no, army_no, role, password } = data;
     const [result] = await pool.query(
-      `INSERT INTO users (name, regiment, batch_no, army_id, role, password)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, regiment, batch_no, army_id, role, password]
+      `INSERT INTO users (\`name\`, \`rank\`, \`unit\`, \`course_no\`, \`army_no\`, \`role\`, \`password\`)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [name, rank, unit, course_no, army_no, role, password]
     );
     return result.insertId;
   },
@@ -17,7 +17,7 @@ const UserModel = {
   // Select all users
   async getAll() {
     const [rows] = await pool.query(
-      `SELECT u.id, u.name, u.regiment, u.batch_no, u.army_id, u.role, u.status,
+      `SELECT u.id, u.name, u.rank, u.unit, u.course_no, u.army_no, u.role, u.status,
        GROUP_CONCAT(DISTINCT c.id) as class_ids,
        GROUP_CONCAT(DISTINCT c.class_name SEPARATOR ', ') as class_names
        FROM users u
@@ -28,12 +28,12 @@ const UserModel = {
     return rows;
   },
 
-  async getByArmyId(armyId) {
+  async getByArmyNo(armyNo) {
     const [rows] = await pool.query(
       `SELECT id, name 
      FROM users 
-     WHERE army_id = ?`,
-      [armyId]
+     WHERE army_no = ?`,
+      [armyNo]
     );
     return rows[0];
   },
@@ -42,7 +42,7 @@ const UserModel = {
 
   // Update user fields
   async updateUser(id, fields) {
-    const allowedColumns = ['name', 'regiment', 'batch_no', 'army_id', 'role', 'status', 'password'];
+    const allowedColumns = ['name', 'rank', 'unit', 'course_no', 'army_no', 'role', 'status', 'password'];
     const filteredFields = {};
 
     for (const key of Object.keys(fields)) {
@@ -57,7 +57,7 @@ const UserModel = {
     if (keys.length === 0) return;
 
     const values = Object.values(filteredFields);
-    const setClause = keys.map(k => `${k} = ?`).join(", ");
+    const setClause = keys.map(k => `\`${k}\` = ?`).join(", ");
 
     values.push(id);
 
@@ -82,9 +82,10 @@ const UserModel = {
     SELECT 
       u.id,
       u.name,
-      u.regiment,
-      u.batch_no,
-      u.army_id,
+      u.rank,
+      u.unit,
+      u.course_no,
+      u.army_no,
       u.role,
       u.status,
       o.otp,
@@ -112,10 +113,10 @@ const UserModel = {
   },
 
 
-  // Get users by Batch Number
-  async getByBatch(classes) {
+  // Get users by Course Number
+  async getByCourse(classes) {
     const [rows] = await pool.query(
-      `SELECT id, name, army_id, batch_no FROM users WHERE classes = ?`,
+      `SELECT id, name, army_no, course_no FROM users WHERE classes = ?`,
       [classes]
     );
     return rows;
@@ -131,7 +132,7 @@ const UserModel = {
 
   async getById(id) {
     const [rows] = await pool.query(
-      `SELECT u.id, u.name, u.regiment, u.batch_no, u.army_id, u.role, u.status
+      `SELECT u.id, u.name, u.rank, u.unit, u.course_no, u.army_no, u.role, u.status
        FROM users u
        WHERE u.id = ?`,
       [id]

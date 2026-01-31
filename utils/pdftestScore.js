@@ -27,17 +27,19 @@ module.exports = function generateTestScorePdf(data, fileName, res) {
   const colX = {
     sNo: 40,
     name: 70,
-    army: 170,
-    regiment: 260,
-    batch: 350,
-    score: 420,
+    rank: 160,
+    army: 210,
+    unit: 290,
+    course: 380,
+    score: 460,
   };
 
   doc.fontSize(11).text("S.No", colX.sNo, tableTop);
   doc.text("Name", colX.name, tableTop);
-  doc.text("Army ID", colX.army, tableTop);
-  doc.text("Regiment", colX.regiment, tableTop);
-  doc.text("Batch", colX.batch, tableTop);
+  doc.text("Rank", colX.rank, tableTop);
+  doc.text("Army No", colX.army, tableTop);
+  doc.text("Unit", colX.unit, tableTop);
+  doc.text("Course No", colX.course, tableTop);
   doc.text("Score", colX.score, tableTop);
 
   doc.moveDown(0.5);
@@ -53,9 +55,10 @@ module.exports = function generateTestScorePdf(data, fileName, res) {
     doc.fontSize(10);
     doc.text(index + 1, colX.sNo, y);
     doc.text(s.name, colX.name, y);
-    doc.text(s.army_id, colX.army, y);
-    doc.text(s.regiment, colX.regiment, y);
-    doc.text(s.batch_no, colX.batch, y);
+    doc.text(s.rank || '-', colX.rank, y);
+    doc.text(s.army_no, colX.army, y);
+    doc.text(s.unit, colX.unit, y);
+    doc.text(s.course_no, colX.course, y);
     doc.text(scoreText, colX.score, y);
 
     y += 22;

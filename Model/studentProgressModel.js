@@ -190,8 +190,7 @@ class StudentProgressModel {
             SELECT 
                 scp.*,
                 u.name as student_name,
-                u.army_id,
-                u.batch_no
+                u.army_no
             FROM student_class_progress scp
             JOIN users u ON scp.student_id = u.id
             WHERE scp.class_id = ?

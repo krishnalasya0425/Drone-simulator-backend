@@ -210,9 +210,9 @@ const testSubSets = {
 
       u.id AS student_id,
       u.name AS student_name,
-      u.regiment,
-      u.batch_no,
-      u.army_id,
+      u.unit,
+      u.course_no,
+      u.army_no,
 
       ts.score,
       ts.total_questions
@@ -244,9 +244,9 @@ const testSubSets = {
             students: rows.map(r => ({
                 student_id: r.student_id,
                 name: r.student_name,
-                regiment: r.regiment,
-                batch_no: r.batch_no,
-                army_id: r.army_id,
+                unit: r.unit,
+                course_no: r.course_no,
+                army_no: r.army_no,
                 score: r.score,
                 total_questions: r.total_questions
             }))

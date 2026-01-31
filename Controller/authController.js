@@ -6,20 +6,20 @@ const jwt = require("jsonwebtoken");
 const AuthController = {
 
   async register(req, res) {
-    const { name, regiment, batch_no, army_id, role = 'Student', password } = req.body;
+    const { name, rank, unit, course_no, army_no, role = 'Student', password } = req.body;
 
     try {
-      console.log('Registration attempt for:', { name, army_id });
+      console.log('Registration attempt for:', { name, army_no });
 
-
-      if (!name || !army_id || !password) {
+      // Validation: Required fields
+      if (!name || !rank || !army_no || !password) {
         return res.status(400).json({
           success: false,
-          message: '❌ Missing Required Fields: Please provide Name, Army ID, and Password to register.'
+          message: '❌ Missing Required Fields: Please provide Name, Rank, Army No, and Password to register.'
         });
       }
 
-
+      // Validation: Name length
       if (name.trim().length < 2) {
         return res.status(400).json({
           success: false,
@@ -27,15 +27,23 @@ const AuthController = {
         });
       }
 
-
-      if (army_id.trim().length < 3) {
+      // Validation: Army No must be alphanumeric
+      const alphanumericRegex = /^[a-zA-Z0-9]+$/;
+      if (!alphanumericRegex.test(army_no.trim())) {
         return res.status(400).json({
           success: false,
-          message: '❌ Invalid Army ID: Army ID must be at least 3 characters long.'
+          message: '❌ Invalid Army No: Army No must be alphanumeric (letters and numbers only, no spaces or special characters).'
         });
       }
 
+      if (army_no.trim().length < 3) {
+        return res.status(400).json({
+          success: false,
+          message: '❌ Invalid Army No: Army No must be at least 3 characters long.'
+        });
+      }
 
+      // Validation: Password minimum 6 characters
       if (password.length < 6) {
         return res.status(400).json({
           success: false,
@@ -43,28 +51,27 @@ const AuthController = {
         });
       }
 
-
-      const existingUser = await authModel.findByArmyId(army_id);
+      // Check if army_no already exists
+      const existingUser = await authModel.findByArmyNo(army_no);
       if (existingUser) {
-        console.log('User already exists:', army_id);
+        console.log('User already exists:', army_no);
         return res.status(400).json({
           success: false,
-          message: '❌ Army ID Already Registered: This Army ID is already registered in the system. Please use a different Army ID or login if this is your account.'
+          message: '❌ Army No Already Registered: This Army No is already registered in the system. Please use a different Army No or login if this is your account.'
         });
       }
-
 
       console.log('Hashing password...');
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-
       console.log('Creating new user...');
       const newUser = await authModel.register({
         name,
-        regiment,
-        batch_no,
-        army_id,
+        rank,
+        unit,
+        course_no,
+        army_no,
         role,
         password: hashedPassword,
         status: 'Pending'
@@ -77,7 +84,7 @@ const AuthController = {
         user: {
           id: newUser.insertId,
           name,
-          army_id,
+          army_no,
           role
         }
       });
@@ -93,21 +100,21 @@ const AuthController = {
 
 
   async login(req, res) {
-    const { armyId, password } = req.body;
-    console.log('Login attempt for armyId:', armyId);
+    const { armyNo, password } = req.body;
+    console.log('Login attempt for armyNo:', armyNo);
 
     try {
 
 
-      if (armyId === "admin" && password === "admin") {
+      if (armyNo === "admin" && password === "admin") {
         console.log("Hardcoded admin login successful.");
 
         const adminUser = {
-          id: 0, // Changed from "admin" to numeric 0
-          army_id: "admin",
+          id: 0,
+          army_no: "admin",
           role: "admin",
           name: "Admin",
-          batch_no: "admin"
+          course_no: "admin"
         };
 
         const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -115,7 +122,7 @@ const AuthController = {
         const token = jwt.sign(
           {
             id: adminUser.id,
-            armyId: adminUser.army_id,
+            armyNo: adminUser.army_no,
             role: adminUser.role,
             name: adminUser.name
           },
@@ -137,29 +144,29 @@ const AuthController = {
           id: adminUser.id,
           role: adminUser.role,
           name: adminUser.name,
-          batchNo: adminUser.batch_no,
-          armyId: adminUser.army_id
+          courseNo: adminUser.course_no,
+          armyNo: adminUser.army_no
         });
       }
 
 
 
-      if (!armyId || !password) {
+      if (!armyNo || !password) {
         return res.status(400).json({
           success: false,
-          message: '❌ Missing Credentials: Please provide both Army ID and password to login.'
+          message: '❌ Missing Credentials: Please provide both Army No and password to login.'
         });
       }
 
-      const user = await authModel.login(armyId);
+      const user = await authModel.login(armyNo);
       console.log('User found:', user ? 'Yes' : 'No');
 
-
+      // User not found
       if (!user) {
-        console.log('No user found with armyId:', armyId);
+        console.log('No user found with armyNo:', armyNo);
         return res.status(401).json({
           success: false,
-          message: "❌ Invalid Army ID: No account found with this Army ID. Please check your Army ID or register if you don't have an account."
+          message: "❌ Invalid Army No: No account found with this Army No. Please check your Army No or register if you don't have an account."
         });
       }
 
@@ -201,7 +208,7 @@ const AuthController = {
       const token = jwt.sign(
         {
           id: user.id,
-          armyId: user.army_id,
+          armyNo: user.army_no,
           role: user.role,
           name: user.name
         },
@@ -216,7 +223,7 @@ const AuthController = {
         maxAge: 7 * 24 * 60 * 60 * 1000
       });
 
-      console.log('Login successful for user:', user.army_id);
+      console.log('Login successful for user:', user.army_no);
 
       return res.json({
         success: true,
@@ -225,8 +232,8 @@ const AuthController = {
         id: user.id,
         role: user.role,
         name: user.name,
-        batchNo: user.batch_no,
-        armyId: user.army_id
+        courseNo: user.course_no,
+        armyNo: user.army_no
       });
 
     } catch (error) {

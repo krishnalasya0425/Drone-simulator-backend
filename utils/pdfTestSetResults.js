@@ -66,7 +66,7 @@ module.exports = function generateTestSetResultsPdf(data, fileName, res) {
     doc.fontSize(10).font('Helvetica-Bold').fillColor('#074F06');
     doc.text("#", colX.sNo, tableTop);
     doc.text("STUDENT INFORMATION", colX.name, tableTop);
-    doc.text("BATCH / REGIMENT", colX.batch, tableTop);
+    doc.text("UNIT / COURSE", colX.batch, tableTop);
     doc.text("PERFORMANCE", colX.score, tableTop);
     doc.text("STATUS", colX.status, tableTop);
 
@@ -87,14 +87,14 @@ module.exports = function generateTestSetResultsPdf(data, fileName, res) {
         doc.fontSize(9);
         doc.text(index + 1, colX.sNo, y);
 
-        // Name and Army ID
+        // Name and Army No (with Rank)
         doc.font('Helvetica-Bold').text(r.name, colX.name, y);
-        doc.font('Helvetica').fontSize(8).fillColor('gray').text(r.army_id, colX.name, y + 10);
+        doc.font('Helvetica').fontSize(8).fillColor('gray').text(`${r.rank || ''} - ${r.army_no}`, colX.name, y + 10);
         doc.fillColor('black').fontSize(9);
 
-        // Batch and Regiment
-        doc.text(r.batch_no, colX.batch, y);
-        doc.fontSize(8).fillColor('gray').text(r.regiment, colX.batch, y + 10);
+        // Unit and Course
+        doc.text(r.unit, colX.batch, y);
+        doc.fontSize(8).fillColor('gray').text(r.course_no, colX.batch, y + 10);
         doc.fillColor('black').fontSize(9);
 
         // Score
