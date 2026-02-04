@@ -143,6 +143,7 @@ CREATE TABLE docs (
     file_data LONGBLOB,
     file_type VARCHAR(255) NOT NULL,
     file_path VARCHAR(500),
+    total_pages INT DEFAULT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );

@@ -232,13 +232,27 @@ const docsController = {
       }
 
       const isVideo = req.file.mimetype.startsWith('video/');
+      const isPDF = req.file.mimetype === 'application/pdf';
       let fileData = null;
       let filePath = req.file.path; // Always available with diskStorage
+      let total_pages = null;
+
+      const fs = require('fs');
 
       if (!isVideo) {
         // Optional: still save binary for images if you want them in DB
-        const fs = require('fs');
         fileData = fs.readFileSync(req.file.path);
+      }
+
+      if (isPDF) {
+        try {
+          const { PDFDocument } = require('pdf-lib');
+          const pdfDoc = await PDFDocument.load(fs.readFileSync(req.file.path));
+          total_pages = pdfDoc.getPageCount();
+          console.log(`Detected PDF with ${total_pages} pages`);
+        } catch (pdfError) {
+          console.error("Error counting PDF pages:", pdfError);
+        }
       }
 
       await docsModel.uploadDoc(
@@ -246,7 +260,8 @@ const docsController = {
         doc_title,
         fileData,
         req.file.mimetype,
-        filePath
+        filePath,
+        total_pages
       );
 
       res.json({ message: "File uploaded successfully" });

@@ -167,17 +167,17 @@ const classModel = {
 };
 
 const docsModel = {
-  async uploadDoc(class_id, title, file_data, file_type, file_path = null) {
+  async uploadDoc(class_id, title, file_data, file_type, file_path = null, total_pages = null) {
     await pool.query(
-      `INSERT INTO docs (class_id, doc_title, file_data, file_type, file_path)
-       VALUES (?, ?, ?, ?, ?)`,
-      [class_id, title, file_data, file_type, file_path]
+      `INSERT INTO docs (class_id, doc_title, file_data, file_type, file_path, total_pages)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [class_id, title, file_data, file_type, file_path, total_pages]
     );
   },
 
   async getDocsList(class_id) {
     const [rows] = await pool.query(
-      `SELECT id, doc_title, file_type, file_path FROM docs WHERE class_id = ?`,
+      `SELECT id, doc_title, file_type, file_path, total_pages FROM docs WHERE class_id = ?`,
       [class_id]
     );
     return rows;
