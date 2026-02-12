@@ -24,22 +24,22 @@ const classModel = {
     return rows[0];
   },
 
-  async createClass(classNameOrObj, createdBy, instructorId = null) {
+  async createClass(classNameOrObj, createdBy, instructorIds = null) {
     // Support both calling styles:
-    // 1. createClass({ class_name, created_by, instructor_id }) - object destructuring
-    // 2. createClass(className, createdBy, instructorId) - traditional parameters
-    let className, adminId, assignedInstructorId;
+    // 1. createClass({ class_name, created_by, instructor_ids }) - object destructuring
+    // 2. createClass(className, createdBy, instructorIds) - traditional parameters
+    let className, adminId, assignedInstructorIds;
 
     if (typeof classNameOrObj === 'object' && classNameOrObj !== null) {
       // Object destructuring style
       className = classNameOrObj.class_name;
       adminId = classNameOrObj.created_by;
-      assignedInstructorId = classNameOrObj.instructor_id || null;
+      assignedInstructorIds = classNameOrObj.instructor_ids || null;
     } else {
       // Traditional parameters style
       className = classNameOrObj;
       adminId = createdBy;
-      assignedInstructorId = instructorId;
+      assignedInstructorIds = instructorIds;
     }
 
     // Check for duplicate class name
@@ -52,9 +52,26 @@ const classModel = {
       throw new Error('A class with this name already exists');
     }
 
+    // Create the class (keeping instructor_id for backward compatibility, set to first instructor if provided)
+    const firstInstructorId = Array.isArray(assignedInstructorIds) && assignedInstructorIds.length > 0
+      ? assignedInstructorIds[0]
+      : assignedInstructorIds;
+
     const query = `INSERT INTO classes (class_name, created_by, instructor_id) VALUES (?, ?, ?)`;
-    const [result] = await pool.query(query, [className, adminId, assignedInstructorId]);
-    return result.insertId;
+    const [result] = await pool.query(query, [className, adminId, firstInstructorId]);
+    const classId = result.insertId;
+
+    // If instructor IDs are provided, add them to class_instructors table
+    if (assignedInstructorIds) {
+      const instructorArray = Array.isArray(assignedInstructorIds) ? assignedInstructorIds : [assignedInstructorIds];
+      for (const instructorId of instructorArray) {
+        if (instructorId) {
+          await this.assignInstructorToClass(instructorId, classId);
+        }
+      }
+    }
+
+    return classId;
   },
 
   async updateClass(className, classId) {
@@ -65,25 +82,32 @@ const classModel = {
 
   async getClassesFiltered(instructorId) {
     let query = `
-    SELECT 
+    SELECT DISTINCT
       c.id, 
       c.class_name,
       c.instructor_id,
-      u.name AS created_by,
-      i.name AS instructor_name
+      u.name AS created_by
     FROM classes c
     JOIN users u ON c.created_by = u.id
-    LEFT JOIN users i ON c.instructor_id = i.id
+    LEFT JOIN class_instructors ci ON c.id = ci.class_id
   `;
 
     const params = [];
 
     if (instructorId) {
-      query += ` WHERE c.instructor_id = ?`;
-      params.push(instructorId);
+      query += ` WHERE ci.instructor_id = ? OR c.instructor_id = ?`;
+      params.push(instructorId, instructorId);
     }
 
     const [rows] = await pool.query(query, params);
+
+    // Fetch instructors for each class
+    for (let row of rows) {
+      const instructors = await this.getInstructorsByClass(row.id);
+      row.instructors = instructors;
+      row.instructor_names = instructors.map(i => i.name).join(', ');
+    }
+
     return rows;
   },
 
@@ -93,14 +117,20 @@ const classModel = {
         c.id, 
         c.class_name,
         c.instructor_id,
-        u.name AS created_by,
-        i.name AS instructor_name
+        u.name AS created_by
       FROM classes c
       JOIN users u ON c.created_by = u.id
-      LEFT JOIN users i ON c.instructor_id = i.id
       ORDER BY c.created_at DESC
     `;
     const [rows] = await pool.query(query);
+
+    // Fetch instructors for each class
+    for (let row of rows) {
+      const instructors = await this.getInstructorsByClass(row.id);
+      row.instructors = instructors;
+      row.instructor_names = instructors.map(i => i.name).join(', ');
+    }
+
     return rows;
   },
 
@@ -163,6 +193,64 @@ const classModel = {
       WHERE class_id = ? AND student_id IN (?)
     `;
     await pool.query(query, [classId, studentIds]);
+  },
+
+  // Multiple Instructors Support
+  async assignInstructorToClass(instructorId, classId) {
+    const query = `
+      INSERT INTO class_instructors (instructor_id, class_id)
+      VALUES (?, ?)
+      ON DUPLICATE KEY UPDATE assigned_at = CURRENT_TIMESTAMP
+    `;
+    await pool.query(query, [instructorId, classId]);
+  },
+
+  async removeInstructorFromClass(instructorId, classId) {
+    const query = `
+      DELETE FROM class_instructors 
+      WHERE class_id = ? AND instructor_id = ?
+    `;
+    await pool.query(query, [classId, instructorId]);
+  },
+
+  async getInstructorsByClass(classId) {
+    const query = `
+      SELECT 
+        u.id,
+        u.name,
+        u.rank,
+        ci.assigned_at
+      FROM class_instructors ci
+      JOIN users u ON ci.instructor_id = u.id
+      WHERE ci.class_id = ?
+      ORDER BY ci.assigned_at ASC
+    `;
+    const [rows] = await pool.query(query, [classId]);
+    return rows;
+  },
+
+  async updateClassInstructors(classId, instructorIds) {
+    // Remove all existing instructors
+    await pool.query('DELETE FROM class_instructors WHERE class_id = ?', [classId]);
+
+    // Add new instructors
+    if (instructorIds && instructorIds.length > 0) {
+      for (const instructorId of instructorIds) {
+        await this.assignInstructorToClass(instructorId, classId);
+      }
+
+      // Update the main instructor_id field for backward compatibility
+      await pool.query(
+        'UPDATE classes SET instructor_id = ? WHERE id = ?',
+        [instructorIds[0], classId]
+      );
+    } else {
+      // If no instructors, set instructor_id to NULL
+      await pool.query(
+        'UPDATE classes SET instructor_id = NULL WHERE id = ?',
+        [classId]
+      );
+    }
   }
 };
 

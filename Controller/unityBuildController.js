@@ -272,10 +272,10 @@ const unityBuildController = {
             if (delete_files === 'true') {
                 try {
                     if (fs.existsSync(buildPath)) {
-                        console.log(`Deleting build files at: ${buildPath}`);
+                        // console.log(`Deleting build files at: ${buildPath}`);
                         deleteFolderRecursive(buildPath);
                         filesDeleted = true;
-                        console.log(`Successfully deleted build files at: ${buildPath}`);
+                        // console.log(`Successfully deleted build files at: ${buildPath}`);
                     } else {
                         deletionError = 'Build folder no longer exists on disk';
                     }

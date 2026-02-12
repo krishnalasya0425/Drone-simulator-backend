@@ -48,6 +48,23 @@ CREATE TABLE assigned_classes (
 );
 
 -- ============================================
+-- CLASS INSTRUCTORS (Multiple Instructors Support)
+-- ============================================
+CREATE TABLE class_instructors (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    class_id INT NOT NULL,
+    instructor_id INT NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_class_instructor (class_id, instructor_id),
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Indexes for better query performance
+CREATE INDEX idx_class_instructors_class_id ON class_instructors(class_id);
+CREATE INDEX idx_class_instructors_instructor_id ON class_instructors(instructor_id);
+
+-- ============================================
 -- TESTS
 -- ============================================
 CREATE TABLE tests (
@@ -240,6 +257,37 @@ CREATE TABLE retest_requests (
     FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE,
     FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+
+
+
+
+ CREATE TABLE subtopics (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+   class_id INT NOT NULL,
+   subtopic_name VARCHAR(255) NOT NULL,
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+ );
+
+CREATE TABLE student_progress (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    class_id INT NOT NULL,
+    completed_subtopics JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_student_class (user_id, class_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+);
+
+-- Indexes for better query performance
+CREATE INDEX idx_subtopics_class_id ON subtopics(class_id);
+CREATE INDEX idx_student_progress_user_id ON student_progress(user_id);
+CREATE INDEX idx_student_progress_class_id ON student_progress(class_id);
+
 
 -- ============================================
 -- SYSTEM ADMIN USER (ID = 0)

@@ -19,7 +19,7 @@ const classController = {
 
   async getClassesByInstructorId(req, res) {
     try {
-      const { id, role } = req.query;  // now reading ?id=123&role=admin/instructor
+      const { id, role } = req.query;  
 
       let classes;
       if (role === 'admin') {
@@ -62,10 +62,7 @@ const classController = {
 
   async adminAddClass(req, res) {
     try {
-      console.log("BODY:", req.body);
-      console.log("FILE:", req.file);
-
-      const { class_name, instructor_id, created_by } = req.body;
+      const { class_name, instructor_ids, created_by } = req.body;
 
       if (!class_name || !created_by) {
         return res.status(400).json({
@@ -74,8 +71,25 @@ const classController = {
         });
       }
 
+      // Parse instructor_ids if it's a string (from FormData)
+      let instructorIdsArray = null;
+      if (instructor_ids) {
+        if (typeof instructor_ids === 'string') {
+          try {
+            instructorIdsArray = JSON.parse(instructor_ids);
+          } catch (e) {
+            // If it's not JSON, treat it as a single ID
+            instructorIdsArray = [instructor_ids];
+          }
+        } else if (Array.isArray(instructor_ids)) {
+          instructorIdsArray = instructor_ids;
+        } else {
+          instructorIdsArray = [instructor_ids];
+        }
+      }
+
       try {
-        const classId = await classModel.createClass(class_name, created_by, instructor_id || null);
+        const classId = await classModel.createClass(class_name, created_by, instructorIdsArray);
         res.status(201).json({
           success: true,
           message: "Class created successfully",
@@ -204,6 +218,109 @@ const classController = {
       console.error("Error removing students:", error);
       res.status(500).json({ error: "Failed to remove students" });
     }
+  },
+
+  // Instructor Management
+  async getInstructors(req, res) {
+    try {
+      const { classId } = req.params;
+      const instructors = await classModel.getInstructorsByClass(classId);
+      res.status(200).json(instructors);
+    } catch (error) {
+      console.error("Error fetching instructors:", error);
+      res.status(500).json({ error: "Failed to fetch instructors" });
+    }
+  },
+
+  async addInstructors(req, res) {
+    try {
+      const { classId } = req.params;
+      const { instructorIds, userRole } = req.body;
+
+      // Only admin can add instructors
+      if (userRole !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: "Only administrators can add instructors to classes"
+        });
+      }
+
+      if (!instructorIds || !Array.isArray(instructorIds)) {
+        return res.status(400).json({ error: "Invalid instructor IDs" });
+      }
+
+      for (const instructorId of instructorIds) {
+        await classModel.assignInstructorToClass(instructorId, classId);
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Instructors added successfully"
+      });
+    } catch (error) {
+      console.error("Error adding instructors:", error);
+      res.status(500).json({ error: "Failed to add instructors" });
+    }
+  },
+
+  async removeInstructors(req, res) {
+    try {
+      const { classId } = req.params;
+      const { instructorIds, userRole } = req.body;
+
+      // Only admin can remove instructors
+      if (userRole !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: "Only administrators can remove instructors from classes"
+        });
+      }
+
+      if (!instructorIds || !Array.isArray(instructorIds) || instructorIds.length === 0) {
+        return res.status(400).json({ error: "Invalid instructor IDs" });
+      }
+
+      for (const instructorId of instructorIds) {
+        await classModel.removeInstructorFromClass(instructorId, classId);
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Instructors removed successfully"
+      });
+    } catch (error) {
+      console.error("Error removing instructors:", error);
+      res.status(500).json({ error: "Failed to remove instructors" });
+    }
+  },
+
+  async updateInstructors(req, res) {
+    try {
+      const { classId } = req.params;
+      const { instructorIds, userRole } = req.body;
+
+      // Only admin can update instructors
+      if (userRole !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: "Only administrators can update class instructors"
+        });
+      }
+
+      if (!Array.isArray(instructorIds)) {
+        return res.status(400).json({ error: "Invalid instructor IDs" });
+      }
+
+      await classModel.updateClassInstructors(classId, instructorIds);
+
+      res.status(200).json({
+        success: true,
+        message: "Instructors updated successfully"
+      });
+    } catch (error) {
+      console.error("Error updating instructors:", error);
+      res.status(500).json({ error: "Failed to update instructors" });
+    }
   }
 }
 
@@ -249,7 +366,7 @@ const docsController = {
           const { PDFDocument } = require('pdf-lib');
           const pdfDoc = await PDFDocument.load(fs.readFileSync(req.file.path));
           total_pages = pdfDoc.getPageCount();
-          console.log(`Detected PDF with ${total_pages} pages`);
+          // console.log(`Detected PDF with ${total_pages} pages`);
         } catch (pdfError) {
           console.error("Error counting PDF pages:", pdfError);
         }
@@ -266,7 +383,7 @@ const docsController = {
 
       res.json({ message: "File uploaded successfully" });
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       res.status(500).json({ error: "Upload failed" });
     }
   },

@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage,
     limits: {
-        fileSize: 30 * 1024 * 1024 // 30 MB limit
+        fileSize: 30 * 1024 * 1024 
     }
 });
 
@@ -45,6 +45,12 @@ router.delete('/:classId', classController.delelteClass);
 router.get('/:classId/students', classController.getStudents);
 router.post('/:classId/students', classController.addStudents);
 router.delete('/:classId/students', classController.removeStudents);
+
+// Instructor Management in Class
+router.get('/:classId/instructors', classController.getInstructors);
+router.post('/:classId/instructors', classController.addInstructors);
+router.delete('/:classId/instructors', classController.removeInstructors);
+router.put('/:classId/instructors', classController.updateInstructors);
 
 
 // Syllabus Routes

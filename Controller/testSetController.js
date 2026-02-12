@@ -14,10 +14,10 @@ const pool = require('../config/db'); // Needed for transactions
 const testSubSet = {
 
   async createSetsFromPdf(req, res) {
-    console.log('---- Processing PDF with UPDATED Logic (v3) ----');
-    console.log('Received PDF upload request');
-    console.log('Body:', req.body);
-    console.log('Files:', req.files);
+    // console.log('---- Processing PDF with UPDATED Logic (v3) ----');
+    // console.log('Received PDF upload request');
+    // console.log('Body:', req.body);
+    // console.log('Files:', req.files);
 
     const testId = Number(req.params.testId);
     if (!testId || !req.files || req.files.length === 0) {
@@ -91,9 +91,9 @@ const testSubSet = {
 
         // Parse questions
         // Parse questions
-        console.log(`[DEBUG] Text Content Preview for ${file.originalname}:`, textContent.text.substring(0, 500));
+        // console.log(`[DEBUG] Text Content Preview for ${file.originalname}:`, textContent.text.substring(0, 500));
         const questions = parseQuestionsFromText(textContent.text);
-        console.log(`Parsed ${questions.length} questions from ${file.originalname}`);
+        // console.log(`Parsed ${questions.length} questions from ${file.originalname}`);
 
         if (questions.length === 0) {
           throw new Error(`No questions found in file ${file.originalname}. \nPreview: ${textContent.text.substring(0, 100)}... \nPlease make sure the PDF text is selectable and follows the format: '1. Question... A. Option...'`);
@@ -170,7 +170,7 @@ const testSubSet = {
             [randomSetId, student.student_id]
           );
         } catch (e) {
-          console.log(`Student ${student.student_id} might already be assigned multiple sets. Ignoring.`);
+          // console.log(`Student ${student.student_id} might already be assigned multiple sets. Ignoring.`);
         }
       }
 
@@ -201,9 +201,9 @@ const testSubSet = {
    * Sets are randomly assigned to students
    */
   async createSetsFromQuestionBank(req, res) {
-    console.log('---- Creating Sets from Question Bank ----');
-    console.log('Body:', req.body);
-    console.log('File:', req.file);
+    // console.log('---- Creating Sets from Question Bank ----');
+    // console.log('Body:', req.body);
+    // console.log('File:', req.file);
 
     const testId = Number(req.params.testId);
     if (!testId || !req.file) {
@@ -253,9 +253,9 @@ const testSubSet = {
         throw new Error(`Failed to parse PDF file. The file might be corrupted or in an unsupported format. Error: ${pdfErr.message}`);
       }
 
-      console.log(`[DEBUG] Text Content Preview:`, textContent.text.substring(0, 500));
+      // console.log(`[DEBUG] Text Content Preview:`, textContent.text.substring(0, 500));
       const allQuestions = parseQuestionsFromText(textContent.text);
-      console.log(`Parsed ${allQuestions.length} questions from question bank`);
+      // console.log(`Parsed ${allQuestions.length} questions from question bank`);
 
       if (allQuestions.length === 0) {
         throw new Error(`No questions found in the question bank PDF. Please make sure the PDF text is selectable and follows the format: '1. Question... A. Option...'`);
@@ -267,8 +267,8 @@ const testSubSet = {
         throw new Error(`Question bank has only ${allQuestions.length} questions, but you need at least ${numQuestionsPerSet} questions per set.`);
       }
 
-      console.log(`Total questions in bank: ${allQuestions.length}`);
-      console.log(`Questions needed: ${numQuestionsPerSet} per set × ${numSets} sets`);
+      // console.log(`Total questions in bank: ${allQuestions.length}`);
+      // console.log(`Questions needed: ${numQuestionsPerSet} per set × ${numSets} sets`);
 
       // 2. Get students for assignment
       let students = [];
@@ -289,7 +289,7 @@ const testSubSet = {
         throw new Error("No students found for this test/class");
       }
 
-      console.log(`Found ${students.length} students to assign sets to`);
+      // console.log(`Found ${students.length} students to assign sets to`);
 
       // 3. Determine set naming
       const [existingSets] = await conn.query(
@@ -315,7 +315,7 @@ const testSubSet = {
         const shuffledQuestions = [...allQuestions].sort(() => Math.random() - 0.5);
         const selectedQuestions = shuffledQuestions.slice(0, numQuestionsPerSet);
 
-        console.log(`Creating ${setName} with ${selectedQuestions.length} questions`);
+        // console.log(`Creating ${setName} with ${selectedQuestions.length} questions`);
 
         // Create Test Set
         const [setResult] = await conn.query(
@@ -367,7 +367,7 @@ const testSubSet = {
       }
 
       // 5. Randomly Assign Sets to Students
-      console.log(`Randomly assigning ${createdSetIds.length} sets to ${students.length} students`);
+      // console.log(`Randomly assigning ${createdSetIds.length} sets to ${students.length} students`);
 
       for (const student of students) {
         const randomSetId = createdSetIds[Math.floor(Math.random() * createdSetIds.length)];
@@ -379,7 +379,7 @@ const testSubSet = {
             [randomSetId, student.student_id]
           );
         } catch (e) {
-          console.log(`Student ${student.student_id} might already be assigned. Ignoring.`);
+          // console.log(`Student ${student.student_id} might already be assigned. Ignoring.`);
         }
       }
 
@@ -427,7 +427,7 @@ const testSubSet = {
         classId
       } = req.body;
 
-      console.log(testId, req.body)
+      // console.log(testId, req.body)
       // 🔒 Basic validation
       if (!testId || !numberOfSets || !questionsPerSet || !examType) {
         return res.status(400).json({
@@ -458,7 +458,7 @@ const testSubSet = {
           });
         }
 
-        console.log(`Class ${classId} has ${students.length} students`);
+        // console.log(`Class ${classId} has ${students.length} students`);
       }
 
       await testSetModel.createTestSet({

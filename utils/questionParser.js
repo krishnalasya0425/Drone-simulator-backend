@@ -24,9 +24,10 @@ function parseQuestionsFromText(fullText) {
             // For now, only push if answer exists or maybe we mark it?
             if (currentQuestion.answer) {
                 questions.push(currentQuestion);
-            } else {
-                console.log("Skipping incomplete question (no answer):", currentQuestion.question_text.substring(0, 30));
             }
+            //  else {
+            //     console.log("Skipping incomplete question (no answer):", currentQuestion.question_text.substring(0, 30));
+            // }
             currentQuestion = null;
             state = 'IDLE';
         }

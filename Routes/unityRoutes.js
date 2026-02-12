@@ -7,8 +7,49 @@ const unityBuildModel = require("../Model/unityBuildModel");
 
 const router = express.Router();
 
+// // Helper function to launch Unity build
+// function launchUnityBuild(res, buildFolder) {
+//   if (!fs.existsSync(buildFolder)) {
+//     return res.status(404).json({ message: "Build folder not found" });
+//   }
+
+   
+//   const files = fs.readdirSync(buildFolder);
+//   const exeFile = files.find((f) => f.endsWith(".exe"));
+
+//   if (!exeFile) {
+//     return res.status(404).json({ message: ".exe file not found" });
+//   }
+
+//   const exePath = path.join(buildFolder, exeFile);
+//   const exeName = exeFile.replace('.exe', '');
+
+//    // Unity command-line arguments
+ 
+
+
+//   // Professional Launch Sequence:
+//   // 1. Minimize all windows to clear the view (including browser)
+//   // 2. Start the VR process
+//   // 3. Wait for it to initialize
+//   // 4. Force focus to the new window
+//   const command = `powershell -Command "$shell = New-Object -ComObject Shell.Application; $shell.MinimizeAll(); Start-Process '${exePath}'; Start-Sleep -s 5; $wshell = New-Object -ComObject WScript.Shell; $wshell.AppActivate('${exeName}')"`;
+
+//   exec(command, (err) => {
+//     if (err) {
+//       console.error(err);
+//       return res.status(500).json({ message: "Failed to launch VR application" });
+//     }
+//     res.json({ message: "VR application launched and focused!" });
+//   });
+// }
+
+
+
+const { execFile } = require("child_process");
+
 // Helper function to launch Unity build
-function launchUnityBuild(res, buildFolder) {
+function launchUnityBuild(res, buildFolder, studentId, classId) {
   if (!fs.existsSync(buildFolder)) {
     return res.status(404).json({ message: "Build folder not found" });
   }
@@ -21,29 +62,36 @@ function launchUnityBuild(res, buildFolder) {
   }
 
   const exePath = path.join(buildFolder, exeFile);
-  const exeName = exeFile.replace('.exe', '');
+  const exeName = exeFile.replace(".exe", "");
 
-  // Professional Launch Sequence:
-  // 1. Minimize all windows to clear the view (including browser)
-  // 2. Start the VR process
-  // 3. Wait for it to initialize
-  // 4. Force focus to the new window
-  const command = `powershell -Command "$shell = New-Object -ComObject Shell.Application; $shell.MinimizeAll(); Start-Process '${exePath}'; Start-Sleep -s 5; $wshell = New-Object -ComObject WScript.Shell; $wshell.AppActivate('${exeName}')"`;
+  const args = [
+    `--studentId=${studentId}`,
+    `--classId=${classId}`
+  ];
 
-  exec(command, (err) => {
+  console.log("Launching:", exePath, args);
+
+  execFile(exePath, args, (err) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: "Failed to launch VR application" });
     }
-    res.json({ message: "VR application launched and focused!" });
   });
+
+  // optional focus + minimize using PowerShell separately
+  exec(`powershell -Command "$shell = New-Object -ComObject Shell.Application; $shell.MinimizeAll()"`);
+
+  res.json({ message: "VR application launched with arguments!" });
 }
 
-// Launch practice build for a class
+
 router.get("/practice/:classId", async (req, res) => {
   try {
     const { classId } = req.params;
-
+    const {studentId} = req.query;
+    console.log("calssid ", classId);
+    console.log("studentid ", studentId);
+   
     // Get practice build from database
     const build = await unityBuildModel.getBuildByClassAndType(classId, 'practice');
 
@@ -55,8 +103,10 @@ router.get("/practice/:classId", async (req, res) => {
     }
 
     const buildFolder = build.build_path;
-
-    launchUnityBuild(res, buildFolder);
+    console.log("build",buildFolder)
+  
+    // launchUnityBuild(res, buildFolder);
+      launchUnityBuild(res, buildFolder, studentId, classId);
   } catch (error) {
     console.error("Error launching practice build:", error);
     res.status(500).json({

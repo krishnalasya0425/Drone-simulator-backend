@@ -91,7 +91,7 @@ async function extractWithPdfLib(dataBuffer) {
         });
 
         const pages = pdfDoc.getPages();
-        console.log(`✓ PDF structure validated: ${pages.length} pages found`);
+        // console.log(`✓ PDF structure validated: ${pages.length} pages found`);
 
         // pdf-lib doesn't extract text directly, but if we got here, the PDF is structurally valid
         // We can try to get the raw content
@@ -124,39 +124,39 @@ async function extractTextFromPdfBuffer(dataBuffer) {
 
     // Method 1: Try pdf-parse with standard settings
     try {
-        console.log('📄 Attempting PDF extraction with pdf-parse (standard)...');
+        // console.log('📄 Attempting PDF extraction with pdf-parse (standard)...');
         attemptedMethods.push('pdf-parse-standard');
         const text = await extractWithPdfParse(dataBuffer);
 
         if (text && text.trim().length > 0) {
-            console.log('✅ Successfully extracted text with pdf-parse');
+            // console.log('✅ Successfully extracted text with pdf-parse');
             return { text };
         }
 
         throw new Error('No text content extracted');
     } catch (error) {
-        console.log('⚠️ pdf-parse (standard) failed:', error.message);
+        // console.log('⚠️ pdf-parse (standard) failed:', error.message);
         lastError = error;
     }
 
     // Method 2: Try pdf-lib to validate structure
     try {
-        console.log('📄 Validating PDF structure with pdf-lib...');
+        // console.log('📄 Validating PDF structure with pdf-lib...');
         attemptedMethods.push('pdf-lib');
         const text = await extractWithPdfLib(dataBuffer);
 
         if (text && text.trim().length > 0) {
-            console.log('✅ Successfully extracted text with pdf-lib');
+            // console.log('✅ Successfully extracted text with pdf-lib');
             return { text };
         }
     } catch (error) {
-        console.log('⚠️ pdf-lib validation:', error.message);
+        // console.log('⚠️ pdf-lib validation:', error.message);
         lastError = error;
     }
 
     // Method 3: Try pdf-parse with a repaired buffer
     try {
-        console.log('📄 Attempting PDF repair and re-extraction...');
+        // console.log('📄 Attempting PDF repair and re-extraction...');
         attemptedMethods.push('pdf-parse-repair');
 
         // Load with pdf-lib to repair structure
@@ -177,13 +177,13 @@ async function extractTextFromPdfBuffer(dataBuffer) {
         const text = await extractWithPdfParse(Buffer.from(repairedBuffer));
 
         if (text && text.trim().length > 0) {
-            console.log('✅ Successfully extracted text after PDF repair');
+            // console.log('✅ Successfully extracted text after PDF repair');
             return { text };
         }
 
         throw new Error('No text content extracted from repaired PDF');
     } catch (error) {
-        console.log('⚠️ PDF repair attempt failed:', error.message);
+        // console.log('⚠️ PDF repair attempt failed:', error.message);
         lastError = error;
     }
 

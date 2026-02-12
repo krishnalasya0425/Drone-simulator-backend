@@ -56,12 +56,12 @@ const AuthModel = {
     // Login user
     async login(army_no) {
         try {
-            console.log('Login attempt for army_no:', army_no);
+           
             const [rows] = await pool.query(
                 'SELECT * FROM users WHERE army_no = ?',
                 [army_no]
             );
-            console.log('Login result:', rows[0] ? 'User found' : 'User not found');
+           
             return rows[0];
         } catch (error) {
             console.error('Error in login:', error);

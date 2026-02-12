@@ -9,7 +9,7 @@ const AuthController = {
     const { name, rank, unit, course_no, army_no, role = 'Student', password } = req.body;
 
     try {
-      console.log('Registration attempt for:', { name, army_no });
+      // console.log('Registration attempt for:', { name, army_no });
 
       // Validation: Required fields
       if (!name || !rank || !army_no || !password) {
@@ -54,18 +54,18 @@ const AuthController = {
       // Check if army_no already exists
       const existingUser = await authModel.findByArmyNo(army_no);
       if (existingUser) {
-        console.log('User already exists:', army_no);
+        // console.log('User already exists:', army_no);
         return res.status(400).json({
           success: false,
           message: '❌ Army No Already Registered: This Army No is already registered in the system. Please use a different Army No or login if this is your account.'
         });
       }
 
-      console.log('Hashing password...');
+      // console.log('Hashing password...');
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      console.log('Creating new user...');
+      // console.log('Creating new user...');
       const newUser = await authModel.register({
         name,
         rank,
@@ -77,7 +77,7 @@ const AuthController = {
         status: 'Pending'
       });
 
-      console.log('User created successfully:', newUser);
+      // console.log('User created successfully:', newUser);
       res.status(201).json({
         success: true,
         message: 'User registered successfully. Please wait for admin approval.',
@@ -89,7 +89,7 @@ const AuthController = {
         }
       });
     } catch (error) {
-      console.error('Registration error:', error);
+      // console.error('Registration error:', error);
       res.status(500).json({
         success: false,
         message: 'Error registering user',
@@ -107,8 +107,7 @@ const AuthController = {
 
 
       if (armyNo === "admin" && password === "admin") {
-        console.log("Hardcoded admin login successful.");
-
+    
         const adminUser = {
           id: 0,
           army_no: "admin",
@@ -159,11 +158,11 @@ const AuthController = {
       }
 
       const user = await authModel.login(armyNo);
-      console.log('User found:', user ? 'Yes' : 'No');
+      // console.log('User found:', user ? 'Yes' : 'No');
 
       // User not found
       if (!user) {
-        console.log('No user found with armyNo:', armyNo);
+        // console.log('No user found with armyNo:', armyNo);
         return res.status(401).json({
           success: false,
           message: "❌ Invalid Army No: No account found with this Army No. Please check your Army No or register if you don't have an account."
@@ -173,7 +172,7 @@ const AuthController = {
 
 
       if (user.status.toLowerCase() !== 'approved') {
-        console.log('Account not approved. Status:', user.status);
+        // console.log('Account not approved. Status:', user.status);
 
         let message = '';
         if (user.status.toLowerCase() === 'pending') {
@@ -193,11 +192,11 @@ const AuthController = {
         return res.status(403).json({ success: false, message });
       }
 
-      console.log('Comparing passwords...');
+      // console.log('Comparing passwords...');
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        console.log('Password does not match');
+        // console.log('Password does not match');
         return res.status(401).json({
           success: false,
           message: "❌ Incorrect Password: The password you entered is incorrect. Please try again or reset your password if you've forgotten it."
@@ -223,7 +222,7 @@ const AuthController = {
         maxAge: 7 * 24 * 60 * 60 * 1000
       });
 
-      console.log('Login successful for user:', user.army_no);
+      // console.log('Login successful for user:', user.army_no);
 
       return res.json({
         success: true,
@@ -237,7 +236,7 @@ const AuthController = {
       });
 
     } catch (error) {
-      console.error('Login error:', error);
+      // console.error('Login error:', error);
       res.status(500).json({
         success: false,
         message: "Server error during login",

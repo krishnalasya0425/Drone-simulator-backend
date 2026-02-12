@@ -18,8 +18,12 @@ const classRoutes = require('./Routes/classROutes');
 const otpRoutes = require("./Routes/otpRoutes");
 const testSetRoutes = require("./Routes/testSetRoutes");
 const progressRoutes = require("./Routes/progressRoutes");
+const subtopicRoutes = require('./Routes/subtopicRoutes');
+const completionprogressRoutes = require('./Routes/completionprogressRoutes');
 
 const app = express();
+
+
 
 // app.use(cors({
 //   origin: true,        // Reflects the requester's origin
@@ -78,6 +82,8 @@ app.use("/test-sets", testSetRoutes);
 app.use("/subtest", testSetRoutes); // Added alias for frontend compatibility
 app.use("/progress", progressRoutes); // Student progress tracking
 app.use("/retest", retestRoutes);
+app.use('/subtopics', subtopicRoutes);
+app.use('/completion-progress', completionprogressRoutes);
 
 
 
@@ -86,18 +92,18 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(5000, '0.0.0.0', async () => {
   console.log('Server running on port 5000');
-  console.log('SERVER ABSOLUTE PATH:', __dirname);
-  console.log('-------------------------------------------');
+  // console.log('SERVER ABSOLUTE PATH:', __dirname);
+  // console.log('-------------------------------------------');
 
   // Initialize Unity build file protection
   try {
     const buildProtector = require('./Services/unityBuildProtector');
-    console.log('🔒 Initializing Unity build file protection...');
+    // console.log('🔒 Initializing Unity build file protection...');
     await buildProtector.loadAndProtectAllBuilds();
-    console.log('✅ Unity build file protection active');
+    // console.log('✅ Unity build file protection active');
   } catch (error) {
     console.error('⚠️  Failed to initialize build protection:', error.message);
-    console.error('   Builds will not be protected from direct deletion');
+    // console.error('   Builds will not be protected from direct deletion');
   }
 });
 
