@@ -85,6 +85,7 @@ class StudentProgressController {
      * GET /api/progress/class/:studentId/:classId
      */
     async getClassProgress(req, res) {
+
         try {
             const { studentId, classId } = req.params;
 

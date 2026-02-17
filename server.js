@@ -20,6 +20,7 @@ const testSetRoutes = require("./Routes/testSetRoutes");
 const progressRoutes = require("./Routes/progressRoutes");
 const subtopicRoutes = require('./Routes/subtopicRoutes');
 const completionprogressRoutes = require('./Routes/completionprogressRoutes');
+const droneTrainingRoutes = require('./Routes/droneTrainingRoutes');
 
 const app = express();
 
@@ -84,6 +85,8 @@ app.use("/progress", progressRoutes); // Student progress tracking
 app.use("/retest", retestRoutes);
 app.use('/subtopics', subtopicRoutes);
 app.use('/completion-progress', completionprogressRoutes);
+app.use('/drone-training', droneTrainingRoutes); // Drone training module system
+
 
 
 

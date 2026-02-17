@@ -2,37 +2,37 @@ const pool = require("../config/db");
 
 const Subtopic = {
   // Create a new subtopic
-  async create(class_id, subtopic_name) {
+  async create(class_id, subtopic_name, parent_id = null) {
     const [result] = await pool.query(
-      `INSERT INTO subtopics (class_id, subtopic_name)
-       VALUES (?, ?)`,
-      [class_id, subtopic_name]
+      `INSERT INTO subtopics (class_id, subtopic_name, parent_id)
+       VALUES (?, ?, ?)`,
+      [class_id, subtopic_name, parent_id]
     );
 
     return {
       id: result.insertId,
       class_id,
-      subtopic_name
+      subtopic_name,
+      parent_id
     };
   },
 
-  async findByClassAndName(class_id, subtopic_name) {
-  const [rows] = await pool.query(
-    `SELECT * FROM subtopics
-     WHERE class_id = ? AND subtopic_name = ?
-     LIMIT 1`,
-    [class_id, subtopic_name]
-  );
-  return rows[0];
-},
-
+  async findByClassAndName(class_id, subtopic_name, parent_id = null) {
+    const [rows] = await pool.query(
+      `SELECT * FROM subtopics
+       WHERE class_id = ? AND subtopic_name = ? AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL))
+       LIMIT 1`,
+      [class_id, subtopic_name, parent_id, parent_id]
+    );
+    return rows[0];
+  },
 
   // Get all subtopics by class ID
   async findByClassId(classId) {
     const [rows] = await pool.query(
       `SELECT * FROM subtopics
        WHERE class_id = ?
-       ORDER BY id ASC`,
+       ORDER BY parent_id ASC, id ASC`,
       [classId]
     );
     return rows;
@@ -70,14 +70,14 @@ const Subtopic = {
   },
 
   async deleteByIds(ids) {
-  const [result] = await pool.query(
-    `DELETE FROM subtopics WHERE id IN (?)`,
-    [ids]
-  );
-  return result.affectedRows;
-},
+    const [result] = await pool.query(
+      `DELETE FROM subtopics WHERE id IN (?)`,
+      [ids]
+    );
+    return result.affectedRows;
+  },
 
- async countByClass(classId) {
+  async countByClass(classId) {
     try {
       const [rows] = await pool.query(
         'SELECT COUNT(*) AS total FROM subtopics WHERE class_id = ?',

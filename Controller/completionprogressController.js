@@ -12,7 +12,7 @@ exports.createOrUpdateProgress = async (req, res) => {
       return res.status(400).json({ success: false, message: 'user_id, class_id, subtopic_name required' });
     }
 
- 
+
     // Find subtopic ID
     let subtopic = await Subtopic.findByClassAndName(class_id, subtopic_name);
     if (!subtopic) {
@@ -51,13 +51,18 @@ exports.getProgressWithPercentage = async (req, res) => {
   try {
     const { studentId, classId } = req.params;
 
+
+
     // Fetch progress
     const progress = await CompletionProgress.findByUserAndClass(studentId, classId);
     const completedSubtopics = progress ? progress.completed_subtopics || [] : [];
 
+
     // Fetch total subtopics in class
     const totalSubtopics = await Subtopic.countByClass(classId);
+
     const percentage = totalSubtopics > 0 ? (completedSubtopics.length / totalSubtopics) * 100 : 0;
+
 
     res.status(200).json({
       success: true,

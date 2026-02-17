@@ -19,17 +19,33 @@ class UnityBuildProtector {
      */
     async protectBuild(buildPath, classId, buildType) {
         try {
+            // Check if path exists
             if (!fs.existsSync(buildPath)) {
-                // console.log(`Build path does not exist: ${buildPath}`);
+                console.warn(`⚠️  Build path does not exist: ${buildPath}`);
+                return false;
+            }
+
+            // Check if we have read access to the directory
+            try {
+                fs.accessSync(buildPath, fs.constants.R_OK);
+            } catch (accessError) {
+                console.warn(`⚠️  No read access to build path: ${buildPath}`);
                 return false;
             }
 
             // Find the .exe file
-            const files = fs.readdirSync(buildPath);
+            let files;
+            try {
+                files = fs.readdirSync(buildPath);
+            } catch (readError) {
+                console.warn(`⚠️  Cannot read directory: ${buildPath} - ${readError.message}`);
+                return false;
+            }
+
             const exeFile = files.find(f => f.endsWith('.exe'));
 
             if (!exeFile) {
-                // console.log(`No .exe file found in: ${buildPath}`);
+                console.warn(`⚠️  No .exe file found in: ${buildPath}`);
                 return false;
             }
 
@@ -56,14 +72,24 @@ class UnityBuildProtector {
                 }
             }
 
-            // Write lock file
-            fs.writeFileSync(lockFilePath, JSON.stringify(lockInfo, null, 2));
+            // Try to write lock file - this is where permission errors often occur
+            try {
+                fs.writeFileSync(lockFilePath, JSON.stringify(lockInfo, null, 2));
+            } catch (writeError) {
+                if (writeError.code === 'EPERM' || writeError.code === 'EACCES') {
+                    console.warn(`⚠️  Permission denied writing to: ${buildPath}`);
+                    console.warn(`   Build will not be protected. Please check folder permissions.`);
+                } else {
+                    console.warn(`⚠️  Cannot write lock file to: ${buildPath} - ${writeError.message}`);
+                }
+                return false;
+            }
 
             // Make lock file hidden and read-only
             if (process.platform === 'win32') {
                 exec(`attrib +h +r "${lockFilePath}"`, (error) => {
                     if (error) {
-                        console.error('Error setting file attributes:', error);
+                        // Silently ignore attribute errors
                     }
                 });
             }
@@ -100,11 +126,26 @@ class UnityBuildProtector {
                         // Ignore close errors
                     }
                 });
-                throw lockError;
+
+                // Clean up the lock file we created
+                try {
+                    if (fs.existsSync(lockFilePath)) {
+                        if (process.platform === 'win32') {
+                            execSync(`attrib -h -r "${lockFilePath}"`);
+                        }
+                        fs.unlinkSync(lockFilePath);
+                    }
+                } catch (cleanupError) {
+                    // Ignore cleanup errors
+                }
+
+                console.warn(`⚠️  Cannot lock files in: ${buildPath} - ${lockError.message}`);
+                return false;
             }
 
         } catch (error) {
-            console.error(`Error protecting build ${buildPath}:`, error);
+            // Catch any unexpected errors
+            console.warn(`⚠️  Unexpected error protecting build ${buildPath}:`, error.message);
             return false;
         }
     }
@@ -163,21 +204,41 @@ class UnityBuildProtector {
      */
     async loadAndProtectAllBuilds() {
         try {
-            // console.log('Loading all Unity builds from database...');
+            console.log('🔒 Loading Unity builds from database...');
 
             // Get all builds from database
             const builds = await unityBuildModel.getAllBuilds();
 
-            // console.log(`Found ${builds.length} builds to protect`);
-
-            for (const build of builds) {
-                await this.protectBuild(build.build_path, build.class_id, build.build_type);
+            if (builds.length === 0) {
+                console.log('   No Unity builds found in database.');
+                return;
             }
 
-            // console.log('✅ All builds protected');
+            console.log(`   Found ${builds.length} build(s) to protect`);
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const build of builds) {
+                const success = await this.protectBuild(build.build_path, build.class_id, build.build_type);
+                if (success) {
+                    successCount++;
+                    console.log(`   ✅ Protected: ${build.build_path}`);
+                } else {
+                    failCount++;
+                }
+            }
+
+            // Summary
+            if (failCount === 0) {
+                console.log(`✅ All ${successCount} build(s) protected successfully`);
+            } else {
+                console.log(`⚠️  Build protection summary: ${successCount} succeeded, ${failCount} failed`);
+                console.log(`   Failed builds will not be protected from deletion.`);
+            }
 
         } catch (error) {
-            console.error('Error loading and protecting builds:', error);
+            console.error('❌ Error loading and protecting builds:', error.message);
         }
     }
 

@@ -4,16 +4,16 @@ const Subtopic = require('../Model/subtopicrModels');
 // Create a new subtopic
 exports.createSubtopic = async (req, res) => {
   try {
-    const { class_id, subtopic_name } = req.body;
+    const { class_id, subtopic_name, parent_id } = req.body;
 
     if (!class_id || !subtopic_name) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Class ID and subtopic name are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Class ID and subtopic name are required'
       });
     }
 
-  const subtopic = await Subtopic.create(class_id, subtopic_name);
+    const subtopic = await Subtopic.create(class_id, subtopic_name, parent_id || null);
 
 
     res.status(201).json({
@@ -23,10 +23,10 @@ exports.createSubtopic = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating subtopic:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to create subtopic',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -34,10 +34,9 @@ exports.createSubtopic = async (req, res) => {
 // Get all subtopics by class ID
 exports.getSubtopicsByClassId = async (req, res) => {
   try {
-    console.log(req.params)
     const { classId } = req.params;
 
-   const subtopics = await Subtopic.findByClassId(classId);
+    const subtopics = await Subtopic.findByClassId(classId);
 
 
     res.status(200).json({
@@ -47,10 +46,10 @@ exports.getSubtopicsByClassId = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching subtopics:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch subtopics',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -60,13 +59,13 @@ exports.getSubtopicById = async (req, res) => {
   try {
     const { id } = req.params;
 
-   const subtopic = await Subtopic.findById(id);
+    const subtopic = await Subtopic.findById(id);
 
 
     if (!subtopic) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Subtopic not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Subtopic not found'
       });
     }
 
@@ -76,10 +75,10 @@ exports.getSubtopicById = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching subtopic:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch subtopic',
-      error: error.message 
+      error: error.message
     });
   }
 };

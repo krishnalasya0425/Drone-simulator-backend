@@ -44,8 +44,6 @@ class StudentProgressModel {
             safeViewDuration
         ]);
 
-        console.log(`[DEBUG] Updated doc ${doc_id} progress for student ${student_id}: ${completion_percentage}%`);
-
         // After updating document progress, recalculate class progress
         await this.recalculateClassProgress(student_id, class_id);
 
@@ -132,8 +130,6 @@ class StudentProgressModel {
         const allCompletions = [...typeGroups.pdf, ...typeGroups.image, ...typeGroups.video, ...typeGroups.other];
         const overallAvg = getAvg(allCompletions);
         const completedCount = allCompletions.filter(c => c >= 99).length;
-
-        console.log(`[DEBUG] Student ${studentId} Class ${classId} recalculation: ${overallAvg.toFixed(2)}%`);
 
         const query = `
             INSERT INTO student_class_progress 

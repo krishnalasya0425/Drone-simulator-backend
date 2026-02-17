@@ -1,8 +1,8 @@
 -- ============================================
 -- DATABASE
 -- ============================================
-CREATE DATABASE IF NOT EXISTS map_reading;
-USE map_reading;
+CREATE DATABASE IF NOT EXISTS drone_simulator;
+USE drone_simulator;
 
 -- ============================================
 -- USERS
@@ -264,11 +264,13 @@ CREATE TABLE retest_requests (
 
  CREATE TABLE subtopics (
     id INT AUTO_INCREMENT PRIMARY KEY,
-   class_id INT NOT NULL,
-   subtopic_name VARCHAR(255) NOT NULL,
-   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-   FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+    class_id INT NOT NULL,
+    subtopic_name VARCHAR(255) NOT NULL,
+    parent_id INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES subtopics(id) ON DELETE CASCADE
  );
 
 CREATE TABLE student_progress (
@@ -309,3 +311,119 @@ VALUES (
 ON DUPLICATE KEY UPDATE status='Approved';
 
 SET SESSION sql_mode = DEFAULT;
+
+-- ============================================
+-- DRONE TRAINING MODULE SYSTEM
+-- ============================================
+
+-- Drone Categories (FPV, Surveillance, Payload)
+CREATE TABLE IF NOT EXISTS drone_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Training Modules (Introduction, Tutorial, Intermediate, Obstacle Course, Advanced, Maintenance)
+CREATE TABLE IF NOT EXISTS training_modules (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    class_id INT NOT NULL,
+    drone_category_id INT NOT NULL,
+    module_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (drone_category_id) REFERENCES drone_categories(id) ON DELETE CASCADE,
+    INDEX idx_class_category (class_id, drone_category_id)
+);
+
+-- Sub-modules (e.g., City, Forest, Desert for Intermediate; Level1, Level2 for Advanced)
+CREATE TABLE IF NOT EXISTS training_submodules (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    module_id INT NOT NULL,
+    submodule_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (module_id) REFERENCES training_modules(id) ON DELETE CASCADE,
+    INDEX idx_module (module_id)
+);
+
+-- Sub-sub-modules (e.g., Rain, Fog, Wind for each environment)
+CREATE TABLE IF NOT EXISTS training_subsubmodules (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    submodule_id INT NOT NULL,
+    subsubmodule_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (submodule_id) REFERENCES training_submodules(id) ON DELETE CASCADE,
+    INDEX idx_submodule (submodule_id)
+);
+
+-- Student Training Progress with scorecard
+CREATE TABLE IF NOT EXISTS student_training_progress (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    class_id INT NOT NULL,
+    drone_category_id INT NOT NULL,
+    module_id INT,
+    submodule_id INT,
+    subsubmodule_id INT,
+    completed BOOLEAN DEFAULT FALSE,
+    score DECIMAL(5,2),
+    scorecard_image_path VARCHAR(500),
+    completion_data JSON,
+    started_at TIMESTAMP NULL,
+    completed_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (drone_category_id) REFERENCES drone_categories(id) ON DELETE CASCADE,
+    FOREIGN KEY (module_id) REFERENCES training_modules(id) ON DELETE SET NULL,
+    FOREIGN KEY (submodule_id) REFERENCES training_submodules(id) ON DELETE SET NULL,
+    FOREIGN KEY (subsubmodule_id) REFERENCES training_subsubmodules(id) ON DELETE SET NULL,
+    INDEX idx_student_class (student_id, class_id),
+    INDEX idx_student_category (student_id, drone_category_id),
+    INDEX idx_progress_lookup (student_id, class_id, drone_category_id, module_id, submodule_id, subsubmodule_id)
+);
+
+
+CREATE TABLE IF NOT EXISTS training_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    class_id INT NOT NULL,
+    topic_id INT NULL,
+    subtopic_id INT NULL,
+    subsubtopic_id INT NULL,
+    drone_category_id INT NULL,
+    module_id INT NULL,
+    submodule_id INT NULL,
+    subsubmodule_id INT NULL,
+    session_start DATETIME DEFAULT CURRENT_TIMESTAMP,
+    session_end DATETIME NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    score FLOAT NULL,
+    completion_data JSON NULL,
+    scorecard_image_path VARCHAR(500) NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    INDEX idx_student_class (student_id, class_id),
+    INDEX idx_session_start (session_start)
+);
+
+-- Insert default drone categories
+INSERT INTO drone_categories (category_name, description, display_order) VALUES
+('FPV Drone', 'First Person View racing and freestyle drones', 1),
+('Surveillance Drone', 'Reconnaissance and monitoring drones', 2),
+('Payload Drone', 'Heavy-lift and cargo transport drones', 3)
+ON DUPLICATE KEY UPDATE category_name = category_name;

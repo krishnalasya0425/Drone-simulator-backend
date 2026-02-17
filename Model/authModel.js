@@ -5,12 +5,10 @@ const AuthModel = {
     // Find user by army_no
     async findByArmyNo(army_no) {
         try {
-            console.log('Finding user by army_no:', army_no);
             const [rows] = await pool.query(
                 'SELECT * FROM users WHERE army_no = ?',
                 [army_no]
             );
-            console.log('User found:', rows[0] ? 'Yes' : 'No');
             return rows[0];
         } catch (error) {
             console.error('Error in findByArmyNo:', error);
@@ -22,17 +20,6 @@ const AuthModel = {
     async register(userData) {
         const { name, rank, unit, course_no, army_no, role, password, status } = userData;
         try {
-            console.log('Registering new user with data:', {
-                name,
-                rank,
-                unit,
-                course_no,
-                army_no,
-                role,
-                status,
-                password: password ? '***' : 'undefined'
-            });
-
             const [result] = await pool.query(
                 `INSERT INTO users 
                  (\`name\`, \`rank\`, \`unit\`, \`course_no\`, \`army_no\`, \`role\`, \`password\`, \`status\`) 
@@ -40,7 +27,6 @@ const AuthModel = {
                 [name, rank, unit, course_no, army_no, role, password, status]
             );
 
-            console.log('Registration successful, insertId:', result.insertId);
             return result;
         } catch (error) {
             console.error('Error in register:', {
@@ -56,12 +42,12 @@ const AuthModel = {
     // Login user
     async login(army_no) {
         try {
-           
+
             const [rows] = await pool.query(
                 'SELECT * FROM users WHERE army_no = ?',
                 [army_no]
             );
-           
+
             return rows[0];
         } catch (error) {
             console.error('Error in login:', error);
