@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const DroneTrainingController = require('../Controller/droneTrainingController');
 const { authenticateToken } = require('../Middleware/authMiddleware');
+const uploadScreenshot = require('../Middleware/uploadScreenshot');
 
 
 
@@ -28,7 +29,11 @@ router.get('/progress/:studentId/:classId', DroneTrainingController.getStudentPr
 router.get('/progress-summary/:studentId/:classId', DroneTrainingController.getProgressSummary);
 
 // Record progress (no authentication required - Unity/VR apps will call this endpoint)
-router.post('/progress', DroneTrainingController.recordProgress);
+router.post(
+    '/progress',
+    uploadScreenshot.single('screenshot'),   // 👈 THIS IS THE KEY UNITY MUST USE
+    DroneTrainingController.recordProgress
+);
 
 // ============================================
 // INITIALIZATION

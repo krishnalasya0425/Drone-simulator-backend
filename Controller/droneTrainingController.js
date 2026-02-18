@@ -54,7 +54,18 @@ const DroneTrainingController = {
     // ============================================
     async recordProgress(req, res) {
         try {
-            console.log('📦 Received progress data:', req.body); // DEBUG
+            console.log("📦 Body:", req.body);
+
+        console.log("📸 File Object:", req.file);
+
+        if (req.file) {
+            console.log("📂 Screenshot Path:", req.file.path);
+            console.log("📛 Filename:", req.file.filename);
+            console.log("📏 Size:", req.file.size);
+        } else {
+            console.log("❌ No screenshot received");
+        }
+
 
             const {
                 studentId,
@@ -65,6 +76,8 @@ const DroneTrainingController = {
                 completed,
                 score
             } = req.body;
+            console.log(subsubmoduleId);
+
 
             if (!studentId || !classId) {
                 return res.status(400).json({
@@ -85,7 +98,7 @@ const DroneTrainingController = {
                 moduleId: moduleId || null,
                 submoduleId: submoduleId || null,
                 subsubmoduleId: subsubmoduleId || null,
-                completed: completed !== undefined ? completed : true,
+               completed: completed === true || completed === 'true' ? 1 : 0,
                 score: score || null,
                 completionData: {}
             });
