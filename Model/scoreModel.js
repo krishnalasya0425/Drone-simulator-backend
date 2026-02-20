@@ -9,29 +9,45 @@ const scoreModel = {
   async recordScore({
     test_set_id,
     student_id,
+    student_test_set_id,
     score,
     started_at,
     submitted_at,
     answers
   }) {
-    const sql = `
-      UPDATE student_test_sets
-      SET
-        score = ?,
-        started_at = ?,
-        submitted_at = ?,
-        answers = ?
-      WHERE test_set_id = ? AND student_id = ?
-    `;
+    let sql, params;
 
-    await pool.query(sql, [
-      score,
-      toMySQLDateTime(started_at),
-      toMySQLDateTime(submitted_at),
-      JSON.stringify(answers),
-      test_set_id,
-      student_id
-    ]);
+    if (student_test_set_id) {
+      sql = `
+        UPDATE student_test_sets
+        SET score = ?, started_at = ?, submitted_at = ?, answers = ?
+        WHERE id = ?
+      `;
+      params = [
+        score,
+        toMySQLDateTime(started_at),
+        toMySQLDateTime(submitted_at),
+        JSON.stringify(answers),
+        student_test_set_id
+      ];
+    } else {
+      sql = `
+        UPDATE student_test_sets
+        SET score = ?, started_at = ?, submitted_at = ?, answers = ?
+        WHERE test_set_id = ? AND student_id = ?
+      `;
+      params = [
+        score,
+        toMySQLDateTime(started_at),
+        toMySQLDateTime(submitted_at),
+        JSON.stringify(answers),
+        test_set_id,
+        student_id
+      ];
+    }
+
+    const [result] = await pool.query(sql, params);
+    return result.affectedRows > 0;
   },
 
   async getStudentTestReview(student_id, test_set_id) {

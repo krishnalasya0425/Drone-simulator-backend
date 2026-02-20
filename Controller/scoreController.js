@@ -33,19 +33,21 @@ const scoreController = {
             const {
                 test_set_id,
                 student_id,
+                student_test_set_id,
                 score,
                 started_at,
                 submitted_at,
                 answers
             } = req.body;
 
-            if (!test_set_id || !student_id || score == null) {
+            if ((!test_set_id && !student_test_set_id) || !student_id || score == null) {
                 return res.status(400).json({ error: "Missing required fields" });
             }
 
             const saved = await scoreModel.recordScore({
                 test_set_id,
                 student_id,
+                student_test_set_id,
                 score,
                 started_at,
                 submitted_at,

@@ -34,8 +34,8 @@ const testModel = {
         u.course_no,
         u.army_no,
 
-        ts.score,
-        ts.total_questions
+        sts.score,
+        ts2.total_questions
 
       FROM tests t
       JOIN classes c 
@@ -44,9 +44,10 @@ const testModel = {
       JOIN users u 
         ON u.role = 'Student'
 
-      LEFT JOIN test_scores ts
-        ON ts.test_id = t.id
-        AND ts.student_id = u.id
+      LEFT JOIN test_sets ts2 ON ts2.test_id = t.id
+      LEFT JOIN student_test_sets sts
+        ON sts.test_set_id = ts2.id
+        AND sts.student_id = u.id
 
       WHERE t.id = ?;
     `;
@@ -334,6 +335,7 @@ const testModel = {
     }
 
     return {
+      student_test_set_id: info ? idOrStsId : null,
       test_set_id: rows[0].test_set_id,
       test_id: rows[0].test_id,
       set_name: rows[0].set_name,
