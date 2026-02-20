@@ -1,0 +1,338 @@
+{
+  "totalHierarchyLeafNodes": 69,
+  "completedUniqueRecords": 10,
+  "hierarchyBreakdown": [
+    {
+      "module": "Tutorial",
+      "submodule": "Start",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Liftoff",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Move",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Straight",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "U Maneuver",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Start",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Liftoff",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Move",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Straight",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "U Maneuver",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Start",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Liftoff",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Move",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "Straight",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Tutorial",
+      "submodule": "U Maneuver",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "City",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "Forest",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "OpenFields",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "Desert",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "City",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "Forest",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "OpenFields",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "Desert",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "City",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "Forest",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "OpenFields",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Intermediate",
+      "submodule": "Desert",
+      "count": 3,
+      "level": "subsubmodule"
+    },
+    {
+      "module": "Obstacle Course",
+      "submodule": "ObstacleCourse",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Obstacle Course",
+      "submodule": "ObstacleCourse",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Obstacle Course",
+      "submodule": "ObstacleCourse",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Advanced",
+      "submodule": "Level1",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Advanced",
+      "submodule": "Level2",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Advanced",
+      "submodule": "Level1",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Advanced",
+      "submodule": "Level2",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Advanced",
+      "submodule": "Level1",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Advanced",
+      "submodule": "Level2",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Parts Identification",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Assembly",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Disassembly",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Parts Identification",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Assembly",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Disassembly",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Parts Identification",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Assembly",
+      "count": 1,
+      "level": "submodule"
+    },
+    {
+      "module": "Maintenance",
+      "submodule": "Disassembly",
+      "count": 1,
+      "level": "submodule"
+    }
+  ],
+  "progressRecords": [
+    {
+      "module_id": 64,
+      "submodule_id": 160,
+      "subsubmodule_id": null,
+      "completed": 1
+    },
+    {
+      "module_id": 82,
+      "submodule_id": 205,
+      "subsubmodule_id": null,
+      "completed": 1
+    },
+    {
+      "module_id": 80,
+      "submodule_id": 199,
+      "subsubmodule_id": null,
+      "completed": 1
+    },
+    {
+      "module_id": 88,
+      "submodule_id": 220,
+      "subsubmodule_id": null,
+      "completed": 1
+    },
+    {
+      "module_id": 86,
+      "submodule_id": 211,
+      "subsubmodule_id": null,
+      "completed": 1
+    },
+    {
+      "module_id": 87,
+      "submodule_id": 216,
+      "subsubmodule_id": null,
+      "completed": 1
+    },
+    {
+      "module_id": 90,
+      "submodule_id": 223,
+      "subsubmodule_id": null,
+      "completed": 1
+    },
+    {
+      "module_id": 87,
+      "submodule_id": 218,
+      "subsubmodule_id": 177,
+      "completed": 1
+    },
+    {
+      "module_id": 83,
+      "submodule_id": 206,
+      "subsubmodule_id": null,
+      "completed": 1
+    },
+    {
+      "module_id": 81,
+      "submodule_id": 203,
+      "subsubmodule_id": 165,
+      "completed": 1
+    }
+  ]
+}

@@ -427,3 +427,28 @@ INSERT INTO drone_categories (category_name, description, display_order) VALUES
 ('Surveillance Drone', 'Reconnaissance and monitoring drones', 2),
 ('Payload Drone', 'Heavy-lift and cargo transport drones', 3)
 ON DUPLICATE KEY UPDATE category_name = category_name;
+
+-- ============================================
+-- TRAINING SCREENSHOTS (AR/VR Session Captures)
+-- Stores screenshot binary data as LONGBLOB
+-- ============================================
+CREATE TABLE IF NOT EXISTS training_screenshots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    class_id INT NOT NULL,
+    drone_category_id INT,
+    module_id INT,
+    submodule_id INT,
+    subsubmodule_id INT,
+    progress_id INT,
+    image_data LONGBLOB NOT NULL,
+    mime_type VARCHAR(50) DEFAULT 'image/png',
+    original_filename VARCHAR(255),
+    file_size INT,
+    captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    INDEX idx_student_class (student_id, class_id),
+    INDEX idx_progress (progress_id)
+);

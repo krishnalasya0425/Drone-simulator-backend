@@ -1,0 +1,166 @@
+{
+  "class_1": [
+    {
+      "id": 19,
+      "category": "FPV Drone",
+      "module": "Intermediate",
+      "submodule": "City",
+      "subsubmodule": "Fog",
+      "completed": 1
+    },
+    {
+      "id": 20,
+      "category": "FPV Drone",
+      "module": "Obstacle Course",
+      "submodule": "ObstacleCourse",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 24,
+      "category": "FPV Drone",
+      "module": "Maintenance",
+      "submodule": "Parts Identification",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 33,
+      "category": "FPV Drone",
+      "module": "Tutorial",
+      "submodule": "U Maneuver",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 35,
+      "category": "FPV Drone",
+      "module": "Tutorial",
+      "submodule": "Move",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 36,
+      "category": "FPV Drone",
+      "module": "Tutorial",
+      "submodule": "Liftoff",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 37,
+      "category": "FPV Drone",
+      "module": "Intermediate",
+      "submodule": "City",
+      "subsubmodule": "Rain",
+      "completed": 1
+    },
+    {
+      "id": 38,
+      "category": "FPV Drone",
+      "module": "Intermediate",
+      "submodule": "City",
+      "subsubmodule": "Wind",
+      "completed": 1
+    },
+    {
+      "id": 39,
+      "category": "FPV Drone",
+      "module": "Intermediate",
+      "submodule": "OpenFields",
+      "subsubmodule": "Rain",
+      "completed": 1
+    },
+    {
+      "id": 40,
+      "category": "FPV Drone",
+      "module": "Advanced",
+      "submodule": "Level1",
+      "subsubmodule": null,
+      "completed": 1
+    }
+  ],
+  "class_2": [
+    {
+      "id": 25,
+      "category": "FPV Drone",
+      "module": "Tutorial",
+      "submodule": "Straight",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 34,
+      "category": "FPV Drone",
+      "module": "Intermediate",
+      "submodule": "OpenFields",
+      "subsubmodule": "Wind",
+      "completed": 1
+    },
+    {
+      "id": 21,
+      "category": "Surveillance Drone",
+      "module": "Obstacle Course",
+      "submodule": "ObstacleCourse",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 22,
+      "category": "Surveillance Drone",
+      "module": "Obstacle Course",
+      "submodule": "ObstacleCourse",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 27,
+      "category": "Surveillance Drone",
+      "module": "Obstacle Course",
+      "submodule": "ObstacleCourse",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 28,
+      "category": "Surveillance Drone",
+      "module": "Tutorial",
+      "submodule": "Start",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 29,
+      "category": "Surveillance Drone",
+      "module": "Intermediate",
+      "submodule": "City",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 30,
+      "category": "Surveillance Drone",
+      "module": "Maintenance",
+      "submodule": "Parts Identification",
+      "subsubmodule": null,
+      "completed": 1
+    },
+    {
+      "id": 31,
+      "category": "Surveillance Drone",
+      "module": "Intermediate",
+      "submodule": "OpenFields",
+      "subsubmodule": "Wind",
+      "completed": 1
+    },
+    {
+      "id": 32,
+      "category": "Surveillance Drone",
+      "module": "Advanced",
+      "submodule": "Level1",
+      "subsubmodule": null,
+      "completed": 1
+    }
+  ]
+}

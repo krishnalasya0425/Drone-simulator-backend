@@ -179,21 +179,34 @@ const DroneTrainingModel = {
                 );
                 if (rows.length > 0) categoryId = rows[0].drone_category_id;
             } else if (submoduleId) {
-                const [rows] = await pool.query(
-                    `SELECT m.drone_category_id FROM training_modules m
-                     JOIN training_submodules s ON s.module_id = m.id
-                     WHERE s.id = ?`,
-                    [submoduleId]
-                );
-                if (rows.length > 0) categoryId = rows[0].drone_category_id;
-            } else if (moduleId) {
+
+                // 1. Get module_id first
+                const [subs] = await pool.query('SELECT module_id FROM training_submodules WHERE id = ?', [submoduleId]);
+
+                if (subs.length > 0) {
+                    const parentModuleId = subs[0].module_id;
+                    // 2. Get category_id
+                    const [mods] = await pool.query('SELECT drone_category_id FROM training_modules WHERE id = ?', [parentModuleId]);
+
+                    if (mods.length > 0) {
+                        categoryId = mods[0].drone_category_id;
+                    }
+                }
+            }
+
+            if (!categoryId && moduleId) {
                 const [rows] = await pool.query(
                     'SELECT drone_category_id FROM training_modules WHERE id = ?',
                     [moduleId]
                 );
                 if (rows.length > 0) categoryId = rows[0].drone_category_id;
             }
-        }
+
+            if (!categoryId) {
+                // If still not resolved, throw so the issue is visible rather than silently saving wrong data
+                throw new Error(`Could not resolve drone_category_id for moduleId=${moduleId}, submoduleId=${submoduleId}`);
+            }
+        } // end of: if (!categoryId) resolution block
 
         // Check if record exists
         const existing = await this.getStudentProgressByIds(
@@ -415,6 +428,80 @@ const DroneTrainingModel = {
         }
 
         return { success: true, message: 'Structure checked and initialized without duplicates' };
+    },
+
+    // ============================================
+    // SCREENSHOTS
+    // ============================================
+
+    /**
+     * Save a screenshot (binary buffer) into the training_screenshots table.
+     */
+    async saveScreenshot({ studentId, classId, categoryId, moduleId, submoduleId, subsubmoduleId, progressId, imageBuffer, mimeType, originalFilename }) {
+        const [result] = await pool.query(
+            `INSERT INTO training_screenshots
+             (student_id, class_id, drone_category_id, module_id, submodule_id, subsubmodule_id, progress_id, image_data, mime_type, original_filename, file_size)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                studentId,
+                classId,
+                categoryId || null,
+                moduleId || null,
+                submoduleId || null,
+                subsubmoduleId || null,
+                progressId || null,
+                imageBuffer,
+                mimeType || 'image/png',
+                originalFilename || null,
+                imageBuffer.length
+            ]
+        );
+        return result.insertId;
+    },
+
+    /**
+     * Get all screenshots for a student in a class (metadata only, no binary).
+     */
+    async getScreenshotsByStudentAndClass(studentId, classId) {
+        const [rows] = await pool.query(
+            `SELECT 
+                s.id,
+                s.student_id,
+                s.class_id,
+                s.drone_category_id,
+                s.module_id,
+                s.submodule_id,
+                s.subsubmodule_id,
+                s.progress_id,
+                s.mime_type,
+                s.original_filename,
+                s.file_size,
+                s.captured_at,
+                m.module_name,
+                sm.submodule_name,
+                ssm.subsubmodule_name,
+                dc.category_name
+             FROM training_screenshots s
+             LEFT JOIN training_modules m ON m.id = s.module_id
+             LEFT JOIN training_submodules sm ON sm.id = s.submodule_id
+             LEFT JOIN training_subsubmodules ssm ON ssm.id = s.subsubmodule_id
+             LEFT JOIN drone_categories dc ON dc.id = s.drone_category_id
+             WHERE s.student_id = ? AND s.class_id = ?
+             ORDER BY s.captured_at DESC`,
+            [studentId, classId]
+        );
+        return rows;
+    },
+
+    /**
+     * Get a single screenshot's binary data by ID.
+     */
+    async getScreenshotById(id) {
+        const [rows] = await pool.query(
+            'SELECT id, image_data, mime_type, original_filename FROM training_screenshots WHERE id = ?',
+            [id]
+        );
+        return rows[0] || null;
     }
 };
 
